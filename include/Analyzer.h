@@ -82,6 +82,7 @@ class Analyzer : public Data {
   JetPlots *h_jetsFR;
     
   TH1F *h_prova;
+  TH1F *h_VertexNoReweight, *h_VertexPostReweight;
 
   ///Tree for optimization//////
   TFile *outfileTree;

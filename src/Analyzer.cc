@@ -5,6 +5,8 @@ Analyzer::Analyzer() {
   if (debug) cout<<"inizio"<<endl;
   
   h_prova = new TH1F("h_prova","p_T",100,0,1000);
+  h_VertexNoReweight = new TH1F("h_VertexNoReweight","n Vertices no reweighted", 60,0,60);
+  h_VertexPostReweight = new TH1F("h_VertexPostReweight","n Vertices reweighted", 60,0,60);
  
   ncuts=9;
   nchannels=5;
@@ -198,17 +200,17 @@ void Analyzer::Loop() {
       genWeight>=0 ? weight*=1. : weight*=-1.;
     
     // Vertex Select
-    if ( goodVertices<1 ) continue;
+    if ( !goodVertices ) continue;
 
     if(debug) cout<< "object selection" <<endl;
     
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.12);
+    Muon.SetRelIso(0.15);
     Muon.SetChiNdof(10);
     Muon.SetBSdxy(0.20);
     Muon.SetBSdz(0.50);
-    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso03, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
+    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
     Muon.SetPt(15);
     Muon.SetEta(2.4);
@@ -216,15 +218,15 @@ void Analyzer::Loop() {
     Muon.SetChiNdof(50);
     Muon.SetBSdxy(0.20);
     Muon.SetBSdz(0.50);
-    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso03, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseColl);
+    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseColl);
 
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.12,0.6);
+    Muon.SetRelIso(0.15,0.6);
     Muon.SetChiNdof(10,50);
     Muon.SetBSdxy(0.20,0.20);
     Muon.SetBSdz(0.50);
-    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso03, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
+    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
     
     Electron.SetPt(15);
     Electron.SetEta(2.5);
@@ -428,6 +430,12 @@ void Analyzer::LoopFR() {
 
     if (!fChain) cout<<"problems with the input file"<<endl;
     fChain->GetEntry(jentry);
+
+    // Vertex Select
+    if ( !goodVertices ) continue;
+    // GOLD JSON
+    if (lumiMaskGold<1) continue;
+    
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
@@ -448,31 +456,33 @@ void Analyzer::LoopFR() {
     if(MCatNLO)
       genWeight>=0 ? weight*=1. : weight*=-1.;
     
-    // Vertex Select
-    if ( goodVertices<1 ) continue;
+    h_VertexNoReweight->Fill(nGoodPV,weight);
+    if (!IsData)
+      weight*=puWeightGold;
+    h_VertexPostReweight->Fill(nGoodPV,weight);
 
     if(debug) cout<< "object selection" <<endl;
     
     std::vector<Lepton> muonColl;
-    Muon.SetPt(10);
+    Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.12);
+    Muon.SetRelIso(0.15);
     Muon.SetChiNdof(10);
     Muon.SetBSdxy(0.20);
     Muon.SetBSdz(0.50);
-    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso03, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
+    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
     std::vector<Lepton> muonLooseColl;
-    Muon.SetPt(10);
+    Muon.SetPt(15);
     Muon.SetEta(2.4);
     Muon.SetRelIso(0.6);
     Muon.SetChiNdof(50);
     Muon.SetBSdxy(0.20);
     Muon.SetBSdz(0.50);
-    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso03, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseColl);
+    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseColl);
     
     std::vector<Lepton> electronColl;
-    Electron.SetPt(10);
+    Electron.SetPt(15);
     Electron.SetEta(2.5);
     Electron.SetRelIso(0.15);
     Electron.SetBSdxy(0.02);
@@ -577,6 +587,8 @@ void Analyzer::LoopFR() {
   h_nEvents->Write();
   h_nEventsFO->Write();
   h_FOrate->Write();
+  h_VertexNoReweight->Write();
+  h_VertexPostReweight->Write();
 
   Dir = outfile->mkdir("Muons");
   outfile->cd( Dir->GetName() );
