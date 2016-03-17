@@ -892,7 +892,7 @@ float Analyzer::MuonScaleFactor(std::vector<Lepton>& muon, int pos, int sign) {
   if(sign == 0) fsign =0.;
   if(sign == -1) fsign =-1.;
   Double_t Pt = muon[pos].lorentzVec().Pt();
-  Double_t eta = muon[pos].eta();
+  Double_t eta = fabs(muon[pos].eta());
   //if (name == "POG_TightID"){
     ///    # Values of "MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1 + MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1"
 
