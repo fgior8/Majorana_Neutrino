@@ -624,13 +624,11 @@ void Analyzer::LoopQFlip() {
   nchannels=1;
   TString cut_name[] = {"two_mu","probe","no_jets","low_MET","SS","OS"};
   TString channel_name[] = {"mumu"};
-  TH1F ***h_numPt = new TH1F**[ncuts];
-  TH1F ***h_denPt = new TH1F**[ncuts];
-  TH1F ***h_numInvPt = new TH1F**[ncuts];
-  TH1F ***h_denInvPt = new TH1F**[ncuts];
+  TH1F ***h_invPt = new TH1F**[ncuts];
   TH1F ***h_tagPt = new TH1F**[ncuts];
   TH1F ***h_probePt = new TH1F**[ncuts];
   TH1F ***h_mass = new TH1F**[ncuts];
+  TH1F ***h_charge = new TH1F**[ncuts];
   TH1F ***h_MET = new TH1F**[ncuts];
   TH1F ***h_nvtx = new TH1F**[ncuts];
   TH2F ***h_pt_eta = new TH2F**[ncuts];
@@ -638,13 +636,11 @@ void Analyzer::LoopQFlip() {
   h_jets = new JetPlots**[ncuts];
 
   for (UInt_t i=0;i<ncuts;i++) {
-    h_numPt[i] = new TH1F*[nchannels];
-    h_denPt[i] = new TH1F*[nchannels];
-    h_numInvPt[i] = new TH1F*[nchannels];
-    h_denInvPt[i] = new TH1F*[nchannels];
+    h_invPt[i] = new TH1F*[nchannels];
     h_tagPt[i] = new TH1F*[nchannels];
     h_probePt[i] = new TH1F*[nchannels];
     h_mass[i] = new TH1F*[nchannels];
+    h_charge[i] = new TH1F*[nchannels];
     h_MET[i] = new TH1F*[nchannels];
     h_nvtx[i] = new TH1F*[nchannels];
     h_pt_eta[i] = new TH2F*[nchannels];
@@ -654,13 +650,11 @@ void Analyzer::LoopQFlip() {
   
   for (UInt_t i=0;i<ncuts;i++)
     for (UInt_t j=0;j<nchannels;j++) {
-      h_numPt[i][j] = new TH1F("h_numPt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
-      h_denPt[i][j] = new TH1F("h_denPt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
-      h_numInvPt[i][j] = new TH1F("h_numInvPt_"+cut_name[i]+"_"+channel_name[j],";1/P_{T} (1/GeV)",15,0,0.05);
-      h_denInvPt[i][j] = new TH1F("h_denInvPt_"+cut_name[i]+"_"+channel_name[j],";1/P_{T} 1/(GeV)",15,0,0.05);
+      h_invPt[i][j] = new TH1F("h_invPt_"+cut_name[i]+"_"+channel_name[j],";1/P_{T} (1/GeV)",15,0,0.05);
       h_tagPt[i][j] = new TH1F("h_tagPt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
       h_probePt[i][j] = new TH1F("h_probePt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
       h_mass[i][j] = new TH1F("h_mass_"+cut_name[i]+"_"+channel_name[j],";M(#mu#mu)",50,0,200);
+      h_charge[i][j] = new TH1F("h_charge_"+cut_name[i]+"_"+channel_name[j],"",3,-2,2);
       h_MET[i][j] = new TH1F("h_MET_"+cut_name[i]+"_"+channel_name[j],";MET (GeV)",20,0,150);
       h_nvtx[i][j] = new TH1F("h_nvtx_"+cut_name[i]+"_"+channel_name[j],";n Vertices",60,0,60);
       h_pt_eta[i][j] = new TH2F("h_eta_pt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV);#eta",100,0,100,50,-2.4,2.4);
@@ -757,6 +751,7 @@ void Analyzer::LoopQFlip() {
       cut = TWOMU;
       channel = MUMU;
       h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
       h_MET[cut][channel]->Fill(MET, weight);
       h_nvtx[cut][channel]->Fill(nGoodPV, weight);
       for (UInt_t i = 0; i < muonColl.size(); i++)
@@ -787,14 +782,16 @@ void Analyzer::LoopQFlip() {
       channel = MUMU;
       //cout << "probe pT= " << muonColl[probe].lorentzVec().Pt() << " tag pT= " << muonColl[tag].lorentzVec().Pt() << endl;
       h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
       h_MET[cut][channel]->Fill(MET, weight);
       h_nvtx[cut][channel]->Fill(nGoodPV, weight);
       h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
       h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
-      for (UInt_t i; i < muonColl.size(); i++)
-        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+      h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
+      //for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
       h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
-      for (UInt_t i; i < jetColl.size(); i++)
+      for (UInt_t i = 0; i < jetColl.size(); i++)
         h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
     }
 
@@ -805,13 +802,15 @@ void Analyzer::LoopQFlip() {
       cut = NOJET;
       channel = MUMU;
       h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
       h_MET[cut][channel]->Fill(MET, weight);
       h_nvtx[cut][channel]->Fill(nGoodPV, weight);
       h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
       h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+      h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
       h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
-      for (UInt_t i; i < muonColl.size(); i++)
-        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+      for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
     }
 
     // Low MET
@@ -821,35 +820,41 @@ void Analyzer::LoopQFlip() {
       cut = LMET;
       channel = MUMU;
       h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
       h_MET[cut][channel]->Fill(MET, weight);
       h_nvtx[cut][channel]->Fill(nGoodPV, weight);
       h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
       h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+      h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
       h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
-      for (UInt_t i; i < muonColl.size(); i++)
-        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+      for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
 
       if((muonColl[0].charge() * muonColl[1].charge()) > 0) {
         cut = SS;
         h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+        h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
         h_MET[cut][channel]->Fill(MET, weight);
         h_nvtx[cut][channel]->Fill(nGoodPV, weight);
         h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
         h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+        h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
         h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
-        for (UInt_t i; i < muonColl.size(); i++)
-          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+        for (UInt_t i = 0; i < muonColl.size(); i++)
+          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
       }
-      else {
+      else if((muonColl[0].charge() * muonColl[1].charge()) < 0) {
         cut = OS;
         h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+        h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
         h_MET[cut][channel]->Fill(MET, weight);
         h_nvtx[cut][channel]->Fill(nGoodPV, weight);
         h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
         h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+        h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
         h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
-        for (UInt_t i; i < muonColl.size(); i++)
-          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+        for (UInt_t i = 0; i < muonColl.size(); i++)
+          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
       }
     }
 
@@ -867,11 +872,13 @@ void Analyzer::LoopQFlip() {
     for(UInt_t j=0;j<nchannels;j++){
       outfile->cd( "Muons" );
       h_mass[i][j]->Write();
+      h_charge[i][j]->Write();
       h_MET[i][j]->Write();
       h_nvtx[i][j]->Write();
       h_muons[i][j]->Write();
-      h_tagPt[i][j]->Write();
       h_probePt[i][j]->Write();
+      h_tagPt[i][j]->Write();
+      h_invPt[i][j]->Write();
       h_pt_eta[i][j]->Write();
       outfile->cd( "Jets" );
       h_jets[i][j]->Write();
