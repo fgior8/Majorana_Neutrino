@@ -119,9 +119,11 @@ class Analyzer : public Data {
   ~Analyzer();
   void Loop();
   void LoopFR();
+  void LoopQFlip();
   void SetWeight(TString name);
   void SetName(TString name, Int_t version);
   void SetEvtN(Long64_t events);
+  float MuonScaleFactor(std::vector<Lepton>& muon, int pos, int sign);
 
 };
 #endif

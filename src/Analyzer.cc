@@ -614,3 +614,360 @@ void Analyzer::LoopFR() {
   
 
 }
+
+
+void Analyzer::LoopQFlip() {
+  
+  cout << "total number of entries " <<nentries<<endl;
+
+  if (debug) cout<< "loop begins" <<endl;
+
+  
+  #define TWOMU 0
+  #define TAG 1
+  #define NOJET 2
+  #define LMET 3
+  #define SS 4
+  #define OS 5
+  #define MUMU 0
+  
+
+  ncuts=6;
+  nchannels=1;
+  TString cut_name[] = {"two_mu","probe","no_jets","low_MET","SS","OS"};
+  TString channel_name[] = {"mumu"};
+  TH1F ***h_invPt = new TH1F**[ncuts];
+  TH1F ***h_tagPt = new TH1F**[ncuts];
+  TH1F ***h_probePt = new TH1F**[ncuts];
+  TH1F ***h_mass = new TH1F**[ncuts];
+  TH1F ***h_charge = new TH1F**[ncuts];
+  TH1F ***h_MET = new TH1F**[ncuts];
+  TH1F ***h_nvtx = new TH1F**[ncuts];
+  TH2F ***h_pt_eta = new TH2F**[ncuts];
+  h_muons = new MuonPlots**[ncuts];
+  h_jets = new JetPlots**[ncuts];
+
+  for (UInt_t i=0;i<ncuts;i++) {
+    h_invPt[i] = new TH1F*[nchannels];
+    h_tagPt[i] = new TH1F*[nchannels];
+    h_probePt[i] = new TH1F*[nchannels];
+    h_mass[i] = new TH1F*[nchannels];
+    h_charge[i] = new TH1F*[nchannels];
+    h_MET[i] = new TH1F*[nchannels];
+    h_nvtx[i] = new TH1F*[nchannels];
+    h_pt_eta[i] = new TH2F*[nchannels];
+    h_muons[i] = new MuonPlots*[nchannels];
+    h_jets[i] = new JetPlots*[nchannels];
+  }
+  
+  for (UInt_t i=0;i<ncuts;i++)
+    for (UInt_t j=0;j<nchannels;j++) {
+      h_invPt[i][j] = new TH1F("h_invPt_"+cut_name[i]+"_"+channel_name[j],";1/P_{T} (1/GeV)",15,0,0.05);
+      h_tagPt[i][j] = new TH1F("h_tagPt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
+      h_probePt[i][j] = new TH1F("h_probePt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
+      h_mass[i][j] = new TH1F("h_mass_"+cut_name[i]+"_"+channel_name[j],";M(#mu#mu)",50,0,200);
+      h_charge[i][j] = new TH1F("h_charge_"+cut_name[i]+"_"+channel_name[j],"",3,-2,2);
+      h_MET[i][j] = new TH1F("h_MET_"+cut_name[i]+"_"+channel_name[j],";MET (GeV)",20,0,150);
+      h_nvtx[i][j] = new TH1F("h_nvtx_"+cut_name[i]+"_"+channel_name[j],";n Vertices",60,0,60);
+      h_pt_eta[i][j] = new TH2F("h_eta_pt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV);#eta",100,0,100,50,-2.4,2.4);
+      h_muons[i][j]     = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]);
+      h_jets[i][j]     = new JetPlots    ("jets_"    +cut_name[i]+"_"+channel_name[j]);
+    }
+
+  fBTagSF = new BTagSFUtil("CSVM");
+
+  // once we have data we must look a the pileup
+  //  reweightPU = new ReweightPU("/uscms_data/d2/fgior8/Lntuple_18/CMSSW_5_3_14_patch2_LQ/src/code/MyDataPileupHistogram_69400.root");
+
+  if (debug) cout<< "PU histos loaded" <<endl;
+
+
+  if(!MCweight) MCweight=1; 
+
+  if (fChain == 0) 
+    cout << "Ciao!" << endl;
+
+  if (entrieslimit != -1)
+    nentries=entrieslimit;
+
+  if (debug) cout<< "at the loop" <<endl;
+  std::set<int> runs;
+  for (Long64_t jentry = 0; jentry < nentries; jentry++ ) {
+    //clearing vectors
+    selectionStep.clear();    selectChannel.clear();
+    muonColl.clear(); muonLooseColl.clear(); muonLooseNotTightColl.clear();
+    electronColl.clear(); jetColl.clear();
+    
+    if (debug) cout<< "Event number " <<jentry<<endl;
+    if (debug) cout<<"begin loop"<<endl;
+    if (!(jentry % 50000)) 
+      cout << jentry << endl;
+
+    if (!fChain) cout<<"problems with the input file"<<endl;
+    fChain->GetEntry(jentry);
+
+    triggerOK = false;
+    for(UInt_t t=0; t<vtrignames->size(); t++) {
+      trigger = vtrignames->at(t);
+      Int_t ps = vtrigps->at(t);
+      if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
+        triggerOK = true;
+        break;
+      }
+    }
+    if(!triggerOK) continue;
+    
+    // MET filters for now all OFF
+    //----------------------------------------------------------------------------
+    if (!(HBHENoiseFilter && CSCTightHaloFilter && eeBadScFilter && EcalDeadCellTriggerPrimitiveFilter)) continue;
+    
+    weight=MCweight;
+    //MC@NLO weight
+    if(MCatNLO)
+      genWeight>=0 ? weight*=1. : weight*=-1.;
+    
+    // Vertex Select
+    if ( goodVertices<1 ) continue;
+
+    if(debug) cout<< "object selection" <<endl;
+    
+    Muon.SetPt(15);
+    Muon.SetEta(2.4);
+    Muon.SetRelIso(0.12);
+    Muon.SetChiNdof(10);
+    Muon.SetBSdxy(0.20);
+    Muon.SetBSdz(0.50);
+    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso03, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
+
+    Electron.SetPt(15);
+    Electron.SetEta(2.5);
+    Electron.SetRelIso(0.15);
+    Electron.SetBSdxy(0.02);
+    Electron.SetBSdz(0.10);
+    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_snu, *electrons_dxy, *electrons_dz, electronColl);
+    
+    Jets.SetPt(30);
+    Jets.SetEta(2.4);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
+
+    if(debug) cout<< "DONE object selection" <<endl;
+
+    MET = met_pt->at(0);
+
+    bool twoMu = (muonColl.size()==2) && (electronColl.size()==0);
+    if(twoMu) {
+      // Set SFs
+      float muon_id_iso_scale_factor = MuonScaleFactor(muonColl, 0, 0) * MuonScaleFactor(muonColl, 1, 0);
+      if(!isData) weight *= muon_id_iso_scale_factor;
+
+      cut = TWOMU;
+      channel = MUMU;
+      h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
+      h_MET[cut][channel]->Fill(MET, weight);
+      h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+      for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+      for (UInt_t i = 0; i < jetColl.size(); i++)
+	h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
+    }
+
+    //Check pT = 48+/-10
+    bool ptRange = false;
+    int tag = -1;
+    int probe = -1;
+    double pt0 = fabs(muonColl[0].lorentzVec().Pt()-48.);
+    double pt1 = fabs(muonColl[1].lorentzVec().Pt()-48.);
+    if ( pt0 <= 10. && pt1 <= 10.) {
+      if(pt0 > pt1) tag = 1;
+      if(pt0 < pt1) tag = 0;
+    }
+    else if ( pt0 <= 10. )
+      tag = 0;
+    else if ( pt1 <= 10. )
+      tag = 1;
+    probe = 1 - tag;
+
+    if (tag != -1 && twoMu) ptRange = true;
+    if (ptRange) {
+      cut = TAG;
+      channel = MUMU;
+      //cout << "probe pT= " << muonColl[probe].lorentzVec().Pt() << " tag pT= " << muonColl[tag].lorentzVec().Pt() << endl;
+      h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
+      h_MET[cut][channel]->Fill(MET, weight);
+      h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+      h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
+      h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+      h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
+      //for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+      h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
+      for (UInt_t i = 0; i < jetColl.size(); i++)
+        h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
+    }
+
+    // No Jets
+    bool NoJets = false;
+    if (jetColl.size() == 0 && ptRange) NoJets = true;
+    if (NoJets) {
+      cut = NOJET;
+      channel = MUMU;
+      h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
+      h_MET[cut][channel]->Fill(MET, weight);
+      h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+      h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
+      h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+      h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
+      h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
+      for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+    }
+
+    // Low MET
+    bool METRange = false;
+    if (MET < 54 && NoJets) METRange = true;
+    if (METRange || 1) {
+      cut = LMET;
+      channel = MUMU;
+      h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+      h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
+      h_MET[cut][channel]->Fill(MET, weight);
+      h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+      h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
+      h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+      h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
+      h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
+      for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+
+      if((muonColl[0].charge() * muonColl[1].charge()) > 0) {
+        cut = SS;
+        h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+        h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
+        h_MET[cut][channel]->Fill(MET, weight);
+        h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+        h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
+        h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+        h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
+        h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
+        for (UInt_t i = 0; i < muonColl.size(); i++)
+          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+      }
+      else if((muonColl[0].charge() * muonColl[1].charge()) < 0) {
+        cut = OS;
+        h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
+        h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
+        h_MET[cut][channel]->Fill(MET, weight);
+        h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+        h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
+        h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
+        h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
+        h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
+        for (UInt_t i = 0; i < muonColl.size(); i++)
+          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+      }
+    }
+
+    if(debug) cout<< "done filling plots" <<endl;
+    ///Filling standard particle plots END
+
+  }
+  if(debug) cout<< "out of the loop" <<endl;
+  cout << "writing histos" << endl;
+  outfile->cd();
+  Dir = outfile->mkdir("Muons");
+  Dir = outfile->mkdir("Jets");
+
+  for(UInt_t i=0;i<ncuts;i++)
+    for(UInt_t j=0;j<nchannels;j++){
+      outfile->cd( "Muons" );
+      h_mass[i][j]->Write();
+      h_charge[i][j]->Write();
+      h_MET[i][j]->Write();
+      h_nvtx[i][j]->Write();
+      h_muons[i][j]->Write();
+      h_probePt[i][j]->Write();
+      h_tagPt[i][j]->Write();
+      h_invPt[i][j]->Write();
+      h_pt_eta[i][j]->Write();
+      outfile->cd( "Jets" );
+      h_jets[i][j]->Write();
+    }
+  outfile->cd();
+  outfile->Close();
+  cout<<"histo written."<<endl;
+  
+}
+
+float Analyzer::MuonScaleFactor(std::vector<Lepton>& muon, int pos, int sign) {
+  //# Muon SF reference https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
+  //## Retrieve data from the cmsdoc web page:
+  //##   https://cmsdoc.cern.ch/cms/Physics/muon/ReferenceEfficiencies/Run2015/25ns/MuonID_Z_RunCD_Reco76X_Feb15.json
+  //##   https://cmsdoc.cern.ch/cms/Physics/muon/ReferenceEfficiencies/Run2015/25ns/MuonIso_Z_RunCD_Reco76X_Feb15.json
+
+  float fsign = 1.;
+  if(sign == 0) fsign =0.;
+  if(sign == -1) fsign =-1.;
+  Double_t Pt = muon[pos].lorentzVec().Pt();
+  Double_t eta = fabs(muon[pos].eta());
+  //if (name == "POG_TightID"){
+    ///    # Values of "MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1 + MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1"
+
+    if (Pt>20. && Pt <= 25.){
+      if      ( eta <=  0.900)    return (0.97535*1.0036)  + fsign*(0.02);
+      else if ( eta <=  1.200)    return (0.97775*1.0038)  + fsign*(0.06);
+      else if ( eta <=  2.100)    return (0.99295*0.9998)  + fsign*(0.06);
+      else if ( eta <=  2.400)    return (0.97845*1.0062)  + fsign*(0.06);
+      else return 1.;
+
+    }
+    else if (Pt>25. && Pt <= 30.){
+      if      ( eta <=  0.900)    return (0.9828099*0.9977)  + fsign*(0.02);
+      else if ( eta <=  1.200)    return (0.9761207*0.99956)  + fsign*(0.06);
+      else if ( eta <=  2.100)    return (0.989996*1.0020)  + fsign*(0.06);
+      else if ( eta <=  2.400)    return (0.976407*0.99873)  + fsign*(0.06);
+      else return 1.;
+
+    }
+    else if (Pt>30. && Pt <= 40.){
+      if      ( eta <=  0.900)    return (0.986640*1.00087)  + fsign*(0.02);
+      else if ( eta <=  1.200)    return (0.98037*1.00118)  + fsign*(0.06);
+      else if ( eta <=  2.100)    return (0.99230*1.002168)  + fsign*(0.06);
+      else if ( eta <=  2.400)    return (0.9783080*0.99957)  + fsign*(0.06);
+      else return 1.;
+
+      
+    }
+    else if (Pt>40. && Pt <= 50.){
+      if      ( eta <=  0.900)    return (0.987302*0.99954)  + fsign*(0.02);
+      else if ( eta <=  1.200)    return (0.9801*0.9994)  + fsign*(0.06);
+      else if ( eta <=  2.100)    return (0.99125*1.000058)  + fsign*(0.06);
+      else if ( eta <=  2.400)    return (0.9775*0.999581)  + fsign*(0.06);
+      else return 1.;
+
+
+    }
+    else if (Pt>50. && Pt <= 60.){
+      if      ( eta <=  0.900)    return (0.98227*1.00027)  + fsign*(0.02);
+      else if ( eta <=  1.200)    return (0.97658*0.999814)  + fsign*(0.06);
+      else if ( eta <=  2.100)    return (0.989061*1.000066)  + fsign*(0.06);
+      else if ( eta <=  2.400)    return (0.97276*1.000374)  + fsign*(0.06);
+      else return 1.;
+
+
+    }
+    else if (Pt>60. && Pt <= 120.){
+      if      ( eta <=  0.900)    return (0.98566*0.999541)  + fsign*(0.02);
+      else if ( eta <=  1.200)    return (0.9777*1.00047)  + fsign*(0.06);
+      else if ( eta <=  2.100)    return (0.9929*1.000415)  + fsign*(0.06);
+      else if ( eta <=  2.400)    return (0.9784*1.001068)  + fsign*(0.06);
+      else return 1.;
+
+    }
+
+  //}
+  return 1.; 
+}
+
