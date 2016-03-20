@@ -632,10 +632,10 @@ void Analyzer::LoopQFlip() {
   #define MUMU 0
   
 
-  ncuts=6;
-  nchannels=1;
   TString cut_name[] = {"two_mu","probe","no_jets","low_MET","SS","OS"};
   TString channel_name[] = {"mumu"};
+  ncuts=sizeof(cut_name)/sizeof(TString);
+  nchannels=sizeof(channel_name)/sizeof(TString);
   TH1F ***h_invPt = new TH1F**[ncuts];
   TH1F ***h_tagPt = new TH1F**[ncuts];
   TH1F ***h_probePt = new TH1F**[ncuts];
@@ -828,7 +828,7 @@ void Analyzer::LoopQFlip() {
     // Low MET
     bool METRange = false;
     if (MET < 54 && NoJets) METRange = true;
-    if (METRange || 1) {
+    if (METRange) {
       cut = LMET;
       channel = MUMU;
       h_mass[cut][channel]->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), weight);
