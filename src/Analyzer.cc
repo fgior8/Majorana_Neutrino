@@ -513,8 +513,8 @@ void Analyzer::LoopFR() {
     
     if(debug) cout<< "setting MET" <<endl;
 
-    MET = met_pt->at(0);
-    MET_phi =  met_phi->at(0);
+    MET = metNoHF_pt->at(0);
+    MET_phi =  metNoHF_phi->at(0);
     
     if(debug) cout<< "generic plots FILLED" <<endl;
 
@@ -706,6 +706,9 @@ void Analyzer::LoopQFlip() {
     if (!fChain) cout<<"problems with the input file"<<endl;
     fChain->GetEntry(jentry);
 
+    // Vertex Select
+    if ( goodVertices<1 ) continue;
+
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
@@ -726,9 +729,6 @@ void Analyzer::LoopQFlip() {
     if(MCatNLO)
       genWeight>=0 ? weight*=1. : weight*=-1.;
     
-    // Vertex Select
-    if ( goodVertices<1 ) continue;
-
     if(debug) cout<< "object selection" <<endl;
     
     Muon.SetPt(15);
@@ -752,7 +752,12 @@ void Analyzer::LoopQFlip() {
 
     if(debug) cout<< "DONE object selection" <<endl;
 
-    MET = met_pt->at(0);
+    if(debug) cout<< "setting MET" <<endl;
+
+    MET = metNoHF_pt->at(0);
+    MET_phi =  metNoHF_phi->at(0);
+
+    if(debug) cout << "Start filling plots" << endl;
 
     bool twoMu = (muonColl.size()==2) && (electronColl.size()==0);
     if(twoMu) {
