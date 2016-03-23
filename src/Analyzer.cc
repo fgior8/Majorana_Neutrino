@@ -258,8 +258,8 @@ void Analyzer::Loop() {
 	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
       }
 
-    MET = metNoHF_pt->at(0);
-    MET_phi =  metNoHF_phi->at(0);
+    MET = met_pt->at(0);
+    MET_phi = met_phi->at(0);
     
     if(debug) cout<< "generic plots FILLED" <<endl;
 
@@ -434,7 +434,7 @@ void Analyzer::LoopFR() {
     // Vertex Select
     if ( !goodVertices ) continue;
     // GOLD JSON
-    if (lumiMaskGold<1) continue;
+    if (isData && lumiMaskGold<1) continue;
     
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
@@ -457,7 +457,7 @@ void Analyzer::LoopFR() {
       genWeight>=0 ? weight*=1. : weight*=-1.;
     
     h_VertexNoReweight->Fill(nGoodPV,weight);
-    if (!IsData)
+    if (!isData)
       weight*=puWeightGold;
     h_VertexPostReweight->Fill(nGoodPV,weight);
 
@@ -695,7 +695,7 @@ void Analyzer::LoopQFlip() {
   for (Long64_t jentry = 0; jentry < nentries; jentry++ ) {
     //clearing vectors
     selectionStep.clear();    selectChannel.clear();
-    muonColl.clear(); muonLooseColl.clear(); muonLooseNotTightColl.clear();
+    muonColl.clear();
     electronColl.clear(); jetColl.clear();
     
     if (debug) cout<< "Event number " <<jentry<<endl;
@@ -708,6 +708,8 @@ void Analyzer::LoopQFlip() {
 
     // Vertex Select
     if ( goodVertices<1 ) continue;
+    // GOLD JSON
+    if (isData && lumiMaskGold<1) continue;
 
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
@@ -754,13 +756,14 @@ void Analyzer::LoopQFlip() {
 
     if(debug) cout<< "setting MET" <<endl;
 
-    MET = metNoHF_pt->at(0);
-    MET_phi =  metNoHF_phi->at(0);
+    MET = met_pt->at(0);
+    MET_phi =  met_phi->at(0);
 
     if(debug) cout << "Start filling plots" << endl;
 
     bool twoMu = (muonColl.size()==2) && (electronColl.size()==0);
     if(twoMu) {
+      if(debug) cout << "two muons" << endl;
       // Set SFs
       float muon_id_iso_scale_factor = MuonScaleFactor(muonColl, 0, 0) * MuonScaleFactor(muonColl, 1, 0);
       if(!isData) weight *= muon_id_iso_scale_factor;
@@ -771,10 +774,14 @@ void Analyzer::LoopQFlip() {
       h_charge[cut][channel]->Fill(muonColl[0].charge() * muonColl[1].charge(), weight);
       h_MET[cut][channel]->Fill(MET, weight);
       h_nvtx[cut][channel]->Fill(nGoodPV, weight);
+      if(debug) cout << "filling h_muons" << endl;
       for (UInt_t i = 0; i < muonColl.size(); i++)
         h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
-      for (UInt_t i = 0; i < jetColl.size(); i++)
+      if(debug) cout << "filling h_jets" << endl;
+      for (UInt_t i = 0; i < jetColl.size(); i++) {
+	index=jetColl[i].ijet();
 	h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
+      }
     }
 
     //Check pT = 48+/-10
