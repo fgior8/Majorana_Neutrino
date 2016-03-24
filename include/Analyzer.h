@@ -29,8 +29,8 @@ class Analyzer : public Data {
 
 
   const Bool_t debug = false;
-//  const Double_t integratedlumi = 174.34;
-  const Double_t integratedlumi = 1799.843; //for Fakes
+  const Double_t integratedlumi = 174.34;
+  //const Double_t integratedlumi = 1799.843; //for Fakes
   const Double_t Mass_Z = 91.1876;
   const Double_t Mass_W = 80.398;
 

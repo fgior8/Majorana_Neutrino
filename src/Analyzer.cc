@@ -715,7 +715,8 @@ void Analyzer::LoopQFlip() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
+      //if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
+      if ( trigger.Contains("HLT_IsoMu27_v") && ps>0) {
         triggerOK = true;
         break;
       }
