@@ -60,11 +60,12 @@ void Analyzer::SetName(TString name, Int_t version) {
 
 void Analyzer::SetWeight(TString name) {
 
-  MCweight = integratedlumi * getXS(name);
-  // lumi *  cs(pb) * gen filter efficiency / MCevents
+
   name.Contains("amcatnlo") ? MCatNLO=true : MCatNLO=false; 
   name.Contains("Data") ? isData=true : isData=false;
   if(isData) MCweight = 1;
+  if(!isData) MCweight = integratedlumi * getXS(name);
+  // lumi *  cs(pb) * gen filter efficiency / MCevents
   cout<<"MCweight = "<<MCweight<<endl;
 }
 
@@ -813,8 +814,8 @@ void Analyzer::LoopQFlip() {
       h_probePt[cut][channel]->Fill(muonColl[probe].lorentzVec().Pt(), weight);
       h_tagPt[cut][channel]->Fill(muonColl[tag].lorentzVec().Pt(), weight);
       h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
-      //for (UInt_t i = 0; i < muonColl.size(); i++)
-        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+      for (UInt_t i = 0; i < muonColl.size(); i++)
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
       h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
       for (UInt_t i = 0; i < jetColl.size(); i++)
         h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
@@ -835,7 +836,7 @@ void Analyzer::LoopQFlip() {
       h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
       h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
       for (UInt_t i = 0; i < muonColl.size(); i++)
-        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
     }
 
     // Low MET
@@ -853,7 +854,7 @@ void Analyzer::LoopQFlip() {
       h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
       h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
       for (UInt_t i = 0; i < muonColl.size(); i++)
-        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+        h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
 
       if((muonColl[0].charge() * muonColl[1].charge()) > 0) {
         cut = SS;
@@ -866,7 +867,7 @@ void Analyzer::LoopQFlip() {
         h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
         h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
         for (UInt_t i = 0; i < muonColl.size(); i++)
-          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
       }
       else if((muonColl[0].charge() * muonColl[1].charge()) < 0) {
         cut = OS;
@@ -879,7 +880,7 @@ void Analyzer::LoopQFlip() {
         h_invPt[cut][channel]->Fill(1./muonColl[probe].lorentzVec().Pt(), weight);
         h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
         for (UInt_t i = 0; i < muonColl.size(); i++)
-          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[probe].lorentzVec(), muonColl[probe].charge(), muonColl[probe].relIso(), muonColl[probe].chiNdof(), muonColl[probe].dxy_BS(), muonColl[probe].dz_BS());
+          h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
       }
     }
 
