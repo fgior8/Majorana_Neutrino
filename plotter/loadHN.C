@@ -216,7 +216,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
   }
 
   if (signal && data) {
-    filename.push_back(directory+"SingleMuon_1.root");
+    filename.push_back(directory+"SingleMuon_"+ver+".root");
     legendname.push_back("Data");
     plotlabel.push_back("Data");
     color.push_back(kBlack); linecol.push_back(kBlack);

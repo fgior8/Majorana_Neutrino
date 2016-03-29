@@ -19,7 +19,7 @@ float getXS(TString MCsample) {
   if (MCsample == "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
     //eventXS=1./268.863;
     //cs = 61526.7
-    eventXS=61526.723577660.0;
+    eventXS=61526.7/23577660.0;
   if (MCsample == "TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8") 
     eventXS=0.2043/252908.;
   if (MCsample == "TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8") 
@@ -39,8 +39,8 @@ float getXS(TString MCsample) {
     eventXS=47.1/978512.0;
   if (MCsample == "ZZ_TuneCUETP8M1_13TeV-pythia8") 
     //eventXS=15.4/996168.;
-    //cs = 20762.0  
-    eventXS=20762.0/996944.0;
+    //cs = 16.9
+    eventXS=16.9/996944.0;
   
   if (MCsample == "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8") 
     eventXS=558528000./10611979.;
