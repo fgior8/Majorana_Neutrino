@@ -5,20 +5,21 @@ float getXS(TString MCsample) {
   
   if (MCsample == "TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8") 
     //eventXS=815.96/11339232.;
-    eventXS=1./29588.256;
+    eventXS=831.8/11344206.0;
   if (MCsample == "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1") 
     eventXS=35.6/1000000.;
   if (MCsample == "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1") 
     eventXS=35.6/995600.;
   if (MCsample == "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
     //eventXS=1./3210.8;
-    eventXS=1./8693.5;
+    eventXS=6024.2/26653508.0;
   if (MCsample == "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
     //eventXS=1./1219.8;
-    eventXS=1./3424.007;
+    eventXS=18610.0/29639808.0;
   if (MCsample == "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
     //eventXS=1./268.863;
-    eventXS=1./1538.562;
+    //cs = 61526.7
+    eventXS=61526.723577660.0;
   if (MCsample == "TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8") 
     eventXS=0.2043/252908.;
   if (MCsample == "TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8") 
@@ -30,13 +31,16 @@ float getXS(TString MCsample) {
   
   if (MCsample == "WW_TuneCUETP8M1_13TeV-pythia8") 
     //eventXS=110.8/994416.;
-    eventXS=1./182363.161;
+    //cs = 113.8
+    eventXS=113.8/993640.0;
   if (MCsample == "WZ_TuneCUETP8M1_13TeV-pythia8") 
     //eventXS=66.1/991232.;
-    eventXS=1./301122.644;
+    //cs = 47.1
+    eventXS=47.1/978512.0;
   if (MCsample == "ZZ_TuneCUETP8M1_13TeV-pythia8") 
     //eventXS=15.4/996168.;
-    eventXS=1./555109.777;
+    //cs = 20762.0  
+    eventXS=20762.0/996944.0;
   
   if (MCsample == "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8") 
     eventXS=558528000./10611979.;
