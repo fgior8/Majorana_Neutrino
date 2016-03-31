@@ -3,12 +3,12 @@ CC=g++
 objects = $(patsubst %.c,%.o,$(wildcard *.c))
 
 #standard dir
-INCLUDEDIR       = ../include/
-INCLUDEDIRCOMMON = ../
+INCLUDEDIR       = ./include/
+INCLUDEDIRCOMMON = ./
 #INCLUDEDIRTMVA   = ./TMVA/include
-SRCDIR           = ../src/
-TESTCDIR         = ../test/
-OUTLIB	         = ../lib/
+SRCDIR           = ./src/
+TESTCDIR         = ./test/
+OUTLIB	         = ./lib/
 
 ROOTCFLAGS    := $(shell $(ROOTSYS)/bin/root-config --cflags)
 ROOTLIBS      := $(shell $(ROOTSYS)/bin/root-config --libs)
