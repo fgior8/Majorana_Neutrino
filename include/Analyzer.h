@@ -27,13 +27,19 @@ using namespace std;
 
 class Analyzer : public Data {
 
-
-  const Bool_t debug = false;
-  const Double_t integratedlumi = 2300; //2.3fb-1 for HLT_IsoMu27_v
-  //const Double_t integratedlumi = 174.34;
-  //const Double_t integratedlumi = 1799.843; //for Fakes
+  const Bool_t debug = false; 
+  //const Double_t integratedlumi = 199.149; // for Fakes
+  const Double_t integratedlumi = 2318.267; // Signal
   const Double_t Mass_Z = 91.1876;
   const Double_t Mass_W = 80.398;
+
+  //SF parametrization
+  TFile *MuSF_trig, *ElSF_trig, *MuElSF_trig;
+  TFile *MuSF_IDISO, *ElSF_IDISO;
+  TH2F *hmuIDSF, *hmumuTriggerSF;
+  TH2F *heIDSF, *heeTriggerSF;
+  TH2F *hmueTriggerSF;
+  //SF
 
   Bool_t isData, MCatNLO;
   TString completename, treename;
@@ -124,7 +130,6 @@ class Analyzer : public Data {
   void SetWeight(TString name);
   void SetName(TString name, Int_t version);
   void SetEvtN(Long64_t events);
-  float MuonScaleFactor(std::vector<Lepton>& muon, int pos, int sign);
 
 };
 #endif

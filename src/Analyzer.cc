@@ -3,6 +3,34 @@
 Analyzer::Analyzer() {
 
   if (debug) cout<<"inizio"<<endl;
+
+  // Scale Factors ///
+  // --first for the trigger-- //
+  //  MuSF_trig   = TFile::Open("/gpfs/csic_projects/cms/fgior8/ScaleFactors/triggerSummary_mumu_ttbar.root"); //only EMu for the moment //FIXME
+  //  ElSF_trig   = TFile::Open("/gpfs/csic_projects/cms/fgior8/ScaleFactors/triggerSummary_ee_ttbar.root");
+  MuElSF_trig = TFile::Open("./ScaleFactors/triggerSummary_emu_13TeV_RunD.root");
+  if(!MuElSF_trig)
+    cout << "ERROR [MuonSF_trig]: Could not open file " << MuSF_trig << " or " << ElSF_trig << " or " << MuElSF_trig << "!"  << endl;
+  // --second for the ID and Isolation-- //
+  MuSF_IDISO   = TFile::Open("./ScaleFactors/MuonID_Z_RunCD_Reco76X_Feb15.root");
+  ElSF_IDISO   = TFile::Open("./ScaleFactors/elec_tight_sf2D_13TeV_RunD.root");
+  if(!MuSF_IDISO || !ElSF_IDISO)
+    cout << "ERROR [MuonSF_IDISO]: Could not open file " << MuSF_IDISO << " or " << ElSF_IDISO << "!"  << endl;
+
+  hmuIDSF = (TH2F*) MuSF_IDISO->Get("MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio")->Clone("muIDSF");       
+  //hmumuTriggerSF = (TH2F*) MuSF_trig ->Get("scalefactor_eta2d_with_syst")  ->Clone("mumuTriggerSF"); 
+  if(!hmuIDSF)// || !hmumuTriggerSF)
+    cout << "ERROR [MuonSF]: Could not find histogram for SF reweighting" << endl;
+  heIDSF = (TH2F*) ElSF_IDISO->Get("GlobalSF")->Clone("eIDSF");
+  //heeTriggerSF = (TH2F*) ElSF_trig ->Get("scalefactor_eta2d_with_syst")  ->Clone("eeTriggerSF");
+  if(!heIDSF)// || !heeTriggerSF)
+    cout << "ERROR [ElectronSF]: Could not find histogram for SF reweighting" << endl;
+
+  hmueTriggerSF = (TH2F*) MuElSF_trig->Get("scalefactor_eta2d_with_syst")->Clone("mueTriggerSF");
+  if(!hmueTriggerSF)
+    cout << "ERROR [MuonElectronSF]: Could not find histogram for SF reweighting" << endl;
+
+  if (debug) cout<<"SF Loaded"<<endl;
   
   h_prova = new TH1F("h_prova","p_T",100,0,1000);
   h_VertexNoReweight = new TH1F("h_VertexNoReweight","n Vertices no reweighted", 60,0,60);
@@ -60,12 +88,11 @@ void Analyzer::SetName(TString name, Int_t version) {
 
 void Analyzer::SetWeight(TString name) {
 
-
+  MCweight = integratedlumi * getXS(name);
+  // lumi *  cs(pb) * gen filter efficiency / MCevents
   name.Contains("amcatnlo") ? MCatNLO=true : MCatNLO=false; 
   name.Contains("Data") ? isData=true : isData=false;
   if(isData) MCweight = 1;
-  if(!isData) MCweight = integratedlumi * getXS(name);
-  // lumi *  cs(pb) * gen filter efficiency / MCevents
   cout<<"MCweight = "<<MCweight<<endl;
 }
 
@@ -76,7 +103,7 @@ void Analyzer::SetEvtN(Long64_t events) {
 
 void Analyzer::Loop() {
   TH2F *FRhisto;
-  TFile *infile = new TFile("histoFR/Total_FRcorr40_1.root");
+  TFile *infile = new TFile("histoFR/Total_FRcorr40_2.root");
   infile->cd();
   TDirectory *dir=gDirectory;
   dir->GetObject("h_FOrate3",FRhisto);
@@ -149,9 +176,6 @@ void Analyzer::Loop() {
   if (debug) cout<< "loop begins" <<endl;
 
   fBTagSF = new BTagSFUtil("CSVM");
-
-  // once we have data we must look a the pileup
-  //  reweightPU = new ReweightPU("/uscms_data/d2/fgior8/LQntuple_18/CMSSW_5_3_14_patch2_LQ/src/code/MyDataPileupHistogram_69400.root");
 
   if (debug) cout<< "PU histos loaded" <<endl;
 
@@ -262,14 +286,22 @@ void Analyzer::Loop() {
     MET = met_pt->at(0);
     MET_phi = met_phi->at(0);
     
+    // applying scaling factor for ID and triggers (now that we have selected the event type)
+    if (!isData && false) {
+      //trigger SF only for emu but applied to both FIXME
+      weight *= hmueTriggerSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[0].lorentzVec().Eta()),fabs(muonColl[1].lorentzVec().Eta()) ) );
+      //ID SF applied per lepton
+      for (UInt_t i=0; i<muonColl.size(); i++) {
+        //if (muonColl[i].leptonType()=="Electron")
+	  //weight *= heIDSF->GetBinContent( hmueTriggerSF->FindBin( leptonSelect[i].lorentzVec().Eta(),fabs(leptonSelect[i].lorentzVec().Pt()) ) );
+	//if (muonColl[i].leptonType()=="Muon")
+	  weight *= hmuIDSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
+      }
+    }
     if(debug) cout<< "generic plots FILLED" <<endl;
 
-      if (muonColl.size()>=4 && jetColl.size()>=2)
-	h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()+muonColl[2].lorentzVec()+muonColl[3].lorentzVec()+jetColl[0].lorentzVec()+jetColl[1].lorentzVec()).M(),weight);
-      else if (electronColl.size()>=4 && jetColl.size()>=2)
-	h_prova->Fill((electronColl[0].lorentzVec()+electronColl[1].lorentzVec()+electronColl[2].lorentzVec()+electronColl[3].lorentzVec()+jetColl[0].lorentzVec()+jetColl[1].lorentzVec()).M(),weight);
-      else if (muonColl.size()>=2 && electronColl.size()>=2 && jetColl.size()>=2)
-	h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()+electronColl[0].lorentzVec()+electronColl[1].lorentzVec()+jetColl[0].lorentzVec()+jetColl[1].lorentzVec()).M(),weight);
+      if (muonColl.size()>=2)
+	h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()).M(),weight);
       
     
     if (muonColl.size()>=2)
@@ -363,14 +395,7 @@ void Analyzer::Loop() {
   
 }
 
-
-
-
-
-
-
-
-
+///Method to calculate the FakeRate
 
 void Analyzer::LoopFR() {
 
@@ -435,7 +460,7 @@ void Analyzer::LoopFR() {
     // Vertex Select
     if ( !goodVertices ) continue;
     // GOLD JSON
-    if (isData && lumiMaskGold<1) continue;
+    if (IsData && lumiMaskGold<1) continue;
     
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
@@ -458,7 +483,7 @@ void Analyzer::LoopFR() {
       genWeight>=0 ? weight*=1. : weight*=-1.;
     
     h_VertexNoReweight->Fill(nGoodPV,weight);
-    if (!isData)
+    if (!IsData)
       weight*=puWeightGold;
     h_VertexPostReweight->Fill(nGoodPV,weight);
 
@@ -514,8 +539,8 @@ void Analyzer::LoopFR() {
     
     if(debug) cout<< "setting MET" <<endl;
 
-    MET = metNoHF_pt->at(0);
-    MET_phi =  metNoHF_phi->at(0);
+    MET = met_pt->at(0);
+    MET_phi =  met_phi->at(0);
     
     if(debug) cout<< "generic plots FILLED" <<endl;
 
@@ -612,10 +637,9 @@ void Analyzer::LoopFR() {
   outfile->Close();
 
   cout<<"histo written."<<endl;
-  
-
 }
 
+/// Method for the charge flip
 
 void Analyzer::LoopQFlip() {
   
@@ -767,7 +791,7 @@ void Analyzer::LoopQFlip() {
     if(twoMu) {
       if(debug) cout << "two muons" << endl;
       // Set SFs
-      float muon_id_iso_scale_factor = MuonScaleFactor(muonColl, 0, 0) * MuonScaleFactor(muonColl, 1, 0);
+      float muon_id_iso_scale_factor =1.;
       if(!isData) weight *= muon_id_iso_scale_factor;
 
       cut = TWOMU;
@@ -913,75 +937,5 @@ void Analyzer::LoopQFlip() {
   outfile->Close();
   cout<<"histo written."<<endl;
   
-}
-
-float Analyzer::MuonScaleFactor(std::vector<Lepton>& muon, int pos, int sign) {
-  //# Muon SF reference https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
-  //## Retrieve data from the cmsdoc web page:
-  //##   https://cmsdoc.cern.ch/cms/Physics/muon/ReferenceEfficiencies/Run2015/25ns/MuonID_Z_RunCD_Reco76X_Feb15.json
-  //##   https://cmsdoc.cern.ch/cms/Physics/muon/ReferenceEfficiencies/Run2015/25ns/MuonIso_Z_RunCD_Reco76X_Feb15.json
-
-  float fsign = 1.;
-  if(sign == 0) fsign =0.;
-  if(sign == -1) fsign =-1.;
-  Double_t Pt = muon[pos].lorentzVec().Pt();
-  Double_t eta = fabs(muon[pos].eta());
-  //if (name == "POG_TightID"){
-    ///    # Values of "MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1 + MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1"
-
-    if (Pt>20. && Pt <= 25.){
-      if      ( eta <=  0.900)    return (0.97535*1.0036)  + fsign*(0.02);
-      else if ( eta <=  1.200)    return (0.97775*1.0038)  + fsign*(0.06);
-      else if ( eta <=  2.100)    return (0.99295*0.9998)  + fsign*(0.06);
-      else if ( eta <=  2.400)    return (0.97845*1.0062)  + fsign*(0.06);
-      else return 1.;
-
-    }
-    else if (Pt>25. && Pt <= 30.){
-      if      ( eta <=  0.900)    return (0.9828099*0.9977)  + fsign*(0.02);
-      else if ( eta <=  1.200)    return (0.9761207*0.99956)  + fsign*(0.06);
-      else if ( eta <=  2.100)    return (0.989996*1.0020)  + fsign*(0.06);
-      else if ( eta <=  2.400)    return (0.976407*0.99873)  + fsign*(0.06);
-      else return 1.;
-
-    }
-    else if (Pt>30. && Pt <= 40.){
-      if      ( eta <=  0.900)    return (0.986640*1.00087)  + fsign*(0.02);
-      else if ( eta <=  1.200)    return (0.98037*1.00118)  + fsign*(0.06);
-      else if ( eta <=  2.100)    return (0.99230*1.002168)  + fsign*(0.06);
-      else if ( eta <=  2.400)    return (0.9783080*0.99957)  + fsign*(0.06);
-      else return 1.;
-
-      
-    }
-    else if (Pt>40. && Pt <= 50.){
-      if      ( eta <=  0.900)    return (0.987302*0.99954)  + fsign*(0.02);
-      else if ( eta <=  1.200)    return (0.9801*0.9994)  + fsign*(0.06);
-      else if ( eta <=  2.100)    return (0.99125*1.000058)  + fsign*(0.06);
-      else if ( eta <=  2.400)    return (0.9775*0.999581)  + fsign*(0.06);
-      else return 1.;
-
-
-    }
-    else if (Pt>50. && Pt <= 60.){
-      if      ( eta <=  0.900)    return (0.98227*1.00027)  + fsign*(0.02);
-      else if ( eta <=  1.200)    return (0.97658*0.999814)  + fsign*(0.06);
-      else if ( eta <=  2.100)    return (0.989061*1.000066)  + fsign*(0.06);
-      else if ( eta <=  2.400)    return (0.97276*1.000374)  + fsign*(0.06);
-      else return 1.;
-
-
-    }
-    else if (Pt>60. && Pt <= 120.){
-      if      ( eta <=  0.900)    return (0.98566*0.999541)  + fsign*(0.02);
-      else if ( eta <=  1.200)    return (0.9777*1.00047)  + fsign*(0.06);
-      else if ( eta <=  2.100)    return (0.9929*1.000415)  + fsign*(0.06);
-      else if ( eta <=  2.400)    return (0.9784*1.001068)  + fsign*(0.06);
-      else return 1.;
-
-    }
-
-  //}
-  return 1.; 
 }
 
