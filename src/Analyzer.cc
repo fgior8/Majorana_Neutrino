@@ -8,12 +8,12 @@ Analyzer::Analyzer() {
   // --first for the trigger-- //
   //  MuSF_trig   = TFile::Open("/gpfs/csic_projects/cms/fgior8/ScaleFactors/triggerSummary_mumu_ttbar.root"); //only EMu for the moment //FIXME
   //  ElSF_trig   = TFile::Open("/gpfs/csic_projects/cms/fgior8/ScaleFactors/triggerSummary_ee_ttbar.root");
-  MuElSF_trig = TFile::Open("./ScaleFactors/triggerSummary_emu_13TeV_RunD.root");
+  MuElSF_trig = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/triggerSummary_emu_13TeV_RunD.root");
   if(!MuElSF_trig)
     cout << "ERROR [MuonSF_trig]: Could not open file " << MuSF_trig << " or " << ElSF_trig << " or " << MuElSF_trig << "!"  << endl;
   // --second for the ID and Isolation-- //
-  MuSF_IDISO   = TFile::Open("./ScaleFactors/MuonID_Z_RunCD_Reco76X_Feb15.root");
-  ElSF_IDISO   = TFile::Open("./ScaleFactors/elec_tight_sf2D_13TeV_RunD.root");
+  MuSF_IDISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonID_Z_RunCD_Reco76X_Feb15.root");
+  ElSF_IDISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/elec_tight_sf2D_13TeV_RunD.root");
   if(!MuSF_IDISO || !ElSF_IDISO)
     cout << "ERROR [MuonSF_IDISO]: Could not open file " << MuSF_IDISO << " or " << ElSF_IDISO << "!"  << endl;
 
