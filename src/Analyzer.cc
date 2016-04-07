@@ -12,14 +12,18 @@ Analyzer::Analyzer() {
   if(!MuElSF_trig)
     cout << "ERROR [MuonSF_trig]: Could not open file " << MuSF_trig << " or " << ElSF_trig << " or " << MuElSF_trig << "!"  << endl;
   // --second for the ID and Isolation-- //
-  MuSF_IDISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonID_Z_RunCD_Reco76X_Feb15.root");
-  ElSF_IDISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/elec_tight_sf2D_13TeV_RunD.root");
-  if(!MuSF_IDISO || !ElSF_IDISO)
-    cout << "ERROR [MuonSF_IDISO]: Could not open file " << MuSF_IDISO << " or " << ElSF_IDISO << "!"  << endl;
+  MuSF_ID    = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonID_Z_RunCD_Reco76X_Feb15.root");
+  MuSF_ISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonIso_Z_RunCD_Reco76X_Feb15.root");
 
-  hmuIDSF = (TH2F*) MuSF_IDISO->Get("MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio")->Clone("muIDSF");       
+  ElSF_IDISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/elec_tight_sf2D_13TeV_RunD.root");
+  if(!MuSF_ID || !MuSF_ISO || !ElSF_IDISO)
+    cout << "ERROR [MuonSF_IDISO]: Could not open file " << MuSF_ID << " or " << MuSF_ISO << " or " << ElSF_IDISO << "!"  << endl;
+
+  hmuIDSF  = (TH2F*) MuSF_ID->Get("MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio")->Clone("muIDSF");       
+  hmuISOSF = (TH2F*) MuSF_ISO->Get("MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1/abseta_pt_ratio")->Clone("muISOSF");
+
   //hmumuTriggerSF = (TH2F*) MuSF_trig ->Get("scalefactor_eta2d_with_syst")  ->Clone("mumuTriggerSF"); 
-  if(!hmuIDSF)// || !hmumuTriggerSF)
+  if(!hmuIDSF || !hmuISOSF)// || !hmumuTriggerSF)
     cout << "ERROR [MuonSF]: Could not find histogram for SF reweighting" << endl;
   heIDSF = (TH2F*) ElSF_IDISO->Get("GlobalSF")->Clone("eIDSF");
   //heeTriggerSF = (TH2F*) ElSF_trig ->Get("scalefactor_eta2d_with_syst")  ->Clone("eeTriggerSF");
@@ -42,6 +46,9 @@ Analyzer::Analyzer() {
   TString channel_name[] = {"all", "sameF","ee", "mumu", "emu"};
   // 0-all, 1-SF, 2 ee, 3 mumu, 4 emu, (5 mue if needed)
   h_muons = new MuonPlots**[ncuts];
+  h_muons_singlefakes = new MuonPlots**[ncuts];
+  h_muons_doublefakes = new MuonPlots**[ncuts];
+  h_muons_totalfakes = new MuonPlots**[ncuts];
   h_electrons = new ElectronPlots**[ncuts];
   h_jets = new JetPlots**[ncuts];
   //h_bjets = new JetPlots**[ncuts];
@@ -52,6 +59,9 @@ Analyzer::Analyzer() {
   
   for (UInt_t i=0;i<ncuts;i++) {
     h_muons[i] = new MuonPlots*[nchannels];
+    h_muons_singlefakes[i] = new MuonPlots*[nchannels];
+    h_muons_doublefakes[i] = new MuonPlots*[nchannels];
+    h_muons_totalfakes[i] = new MuonPlots*[nchannels];
     h_electrons[i] = new ElectronPlots*[nchannels];
     h_jets[i] = new JetPlots*[nchannels];
     //h_bjets[i] = new JetPlots*[nchannels];
@@ -63,7 +73,10 @@ Analyzer::Analyzer() {
   
   for (UInt_t i=0;i<ncuts;i++)
     for (UInt_t j=0;j<nchannels;j++) {
-    h_muons[i][j]     = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]);
+    h_muons[i][j]             = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]);
+    h_muons_singlefakes[i][j] = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]+"_sf");
+    h_muons_doublefakes[i][j] = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]+"_df");
+    h_muons_totalfakes[i][j]  = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]+"_ts");
     h_electrons[i][j] = new ElectronPlots("electrons_"+cut_name[i]+"_"+channel_name[j]);
     h_jets[i][j]      = new JetPlots     ("jets_"     +cut_name[i]+"_"+channel_name[j]);
     //h_bjets[i][j]     = new JetPlots     ("bjets_"    +cut_name[i]+"_"+channel_name[j]);
@@ -223,6 +236,12 @@ void Analyzer::Loop() {
     //MC@NLO weight
     if(MCatNLO)
       genWeight>=0 ? weight*=1. : weight*=-1.;
+
+    h_VertexNoReweight->Fill(nGoodPV,weight);
+    if (!IsData)
+      weight*=puWeightGold;
+    h_VertexPostReweight->Fill(nGoodPV,weight);
+    
     
     // Vertex Select
     if ( !goodVertices ) continue;
@@ -285,23 +304,32 @@ void Analyzer::Loop() {
 
     MET = met_pt->at(0);
     MET_phi = met_phi->at(0);
-    
+    if (isData && muonLooseColl.size()<2) continue;
+    if (!isData && muonColl.size()<2) continue;    
     // applying scaling factor for ID and triggers (now that we have selected the event type)
-    if (!isData && false) {
+    if (!isData) {
       //trigger SF only for emu but applied to both FIXME
       weight *= hmueTriggerSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[0].lorentzVec().Eta()),fabs(muonColl[1].lorentzVec().Eta()) ) );
       //ID SF applied per lepton
-      for (UInt_t i=0; i<muonColl.size(); i++) {
+      for (UInt_t i=0; i<2; i++) { //only 2 muons
         //if (muonColl[i].leptonType()=="Electron")
 	  //weight *= heIDSF->GetBinContent( hmueTriggerSF->FindBin( leptonSelect[i].lorentzVec().Eta(),fabs(leptonSelect[i].lorentzVec().Pt()) ) );
 	//if (muonColl[i].leptonType()=="Muon")
 	  weight *= hmuIDSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
+          weight *= hmuISOSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
       }
     }
     if(debug) cout<< "generic plots FILLED" <<endl;
-
-      if (muonColl.size()>=2)
-	h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()).M(),weight);
+/*
+    vector<Jet> jetCollW; vector<Jet> jetCollB;
+    if (jetColl.size()>=4) {
+      for (UInt_t i=0;i<4;i++) {
+        jetCollB.push_back(jetColl[i]);
+      }
+    }
+*/
+    if (muonColl.size()>=2)
+      h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()).M(),weight);
       
     
     if (muonColl.size()>=2)
@@ -346,13 +374,23 @@ void Analyzer::Loop() {
 	}	
 	SingleFake=SinglebackGround(FRhisto, muonLooseNotTightColl, lep0, singleFake, dataType, weight);
 	DoubleANDSinglebkg(muonColl, lep0, muonLooseNotTightColl, lep1, doubleANDsingleFake, dataType);
-	h_singlefakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, SingleFake*weight, channel, cut);
+        for (Int_t i=0; i<muonLooseColl.size(); i++) {
+cout << " filling muons " << endl;
+          h_muons_singlefakes[cut][channel]->Fill(SingleFake*weight, (Int_t) muonLooseColl.size(), muonLooseColl[i].lorentzVec(), muonLooseColl[i].charge(), muonLooseColl[i].relIso(), muonLooseColl[i].chiNdof(), muonLooseColl[i].dxy_BS(), muonLooseColl[i].dz_BS());
+          h_muons_totalfakes[cut][channel]->Fill(SingleFake*weight, (Int_t) muonLooseColl.size(), muonLooseColl[i].lorentzVec(), muonLooseColl[i].charge(), muonLooseColl[i].relIso(), muonLooseColl[i].chiNdof(), muonLooseColl[i].dxy_BS(), muonLooseColl[i].dz_BS());
+        }
+cout << " filling fakes " << endl;
+        h_singlefakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, SingleFake*weight, channel, cut);
 	h_totalfakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, SingleFake*weight, channel, cut);
 	muonSelected.clear();
       }
       else {
 	DoubleFake=DoublebackGround(FRhisto, muonLooseColl, lep0, lep1, doubleFake, dataType, weight);
 	Single_Double=DoubleTOSinglebkg(FRhisto, muonLooseColl, lep0, lep1);
+        for (Int_t i=0; i<muonLooseColl.size(); i++) {
+          h_muons_doublefakes[cut][channel]->Fill(DoubleFake*weight, (Int_t) muonLooseColl.size(), muonLooseColl[i].lorentzVec(), muonLooseColl[i].charge(), muonLooseColl[i].relIso(), muonLooseColl[i].chiNdof(), muonLooseColl[i].dxy_BS(), muonLooseColl[i].dz_BS());
+          h_muons_totalfakes[cut][channel]->Fill((DoubleFake+Single_Double)*weight, (Int_t) muonLooseColl.size(), muonLooseColl[i].lorentzVec(), muonLooseColl[i].charge(), muonLooseColl[i].relIso(), muonLooseColl[i].chiNdof(), muonLooseColl[i].dxy_BS(), muonLooseColl[i].dz_BS());
+        }
 	h_doublefakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, DoubleFake*weight, channel, cut);
 	h_totalfakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, (DoubleFake+Single_Double)*weight, channel, cut);
       }
@@ -363,6 +401,8 @@ void Analyzer::Loop() {
   if(debug) cout<< "out of the loop" <<endl;
   cout << "writing histos" << endl;
   outfile->cd();
+  h_VertexNoReweight->Write();
+  h_VertexPostReweight->Write();
   h_prova->Write();
   Dir = outfile->mkdir("Signal");
   Dir = outfile->mkdir("SingleFakes");
@@ -378,10 +418,13 @@ void Analyzer::Loop() {
     h_signal[i][j]->Write();
     outfile->cd( "SingleFakes" );
     h_singlefakes[i][j]->Write();
+    h_muons_singlefakes[i][j]->Write();
     outfile->cd( "DoubleFakes" );
     h_doublefakes[i][j]->Write();
+    h_muons_doublefakes[i][j]->Write();
     outfile->cd( "TotalFakes" );
     h_totalfakes[i][j]->Write();
+    h_muons_totalfakes[i][j]->Write();
     outfile->cd( "Muons" );
     h_muons[i][j]->Write();
     outfile->cd( "Electrons" );

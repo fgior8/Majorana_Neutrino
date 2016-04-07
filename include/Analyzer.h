@@ -35,8 +35,8 @@ class Analyzer : public Data {
 
   //SF parametrization
   TFile *MuSF_trig, *ElSF_trig, *MuElSF_trig;
-  TFile *MuSF_IDISO, *ElSF_IDISO;
-  TH2F *hmuIDSF, *hmumuTriggerSF;
+  TFile *MuSF_ID, *MuSF_ISO, *ElSF_IDISO;
+  TH2F *hmuIDSF, *hmuISOSF, *hmumuTriggerSF;
   TH2F *heIDSF, *heeTriggerSF;
   TH2F *hmueTriggerSF;
   //SF
@@ -61,7 +61,7 @@ class Analyzer : public Data {
   ElectronSel Electron;
   JJ Jets;
 
-  MuonPlots ***h_muons;
+  MuonPlots ***h_muons, ***h_muons_singlefakes, ***h_muons_doublefakes, ***h_muons_totalfakes;
   ElectronPlots ***h_electrons;
   JetPlots ***h_jets, ***h_bjets;
   SignalPlots ***h_signal, ***h_singlefakes, ***h_doublefakes, ***h_totalfakes;
