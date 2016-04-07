@@ -29,6 +29,7 @@ class Analyzer : public Data {
 
 
   const Bool_t debug = false;
+  const Bool_t Gen = true;
   const Double_t integratedlumi = 2300; //2.3fb-1 for HLT_IsoMu27_v
   //const Double_t integratedlumi = 174.34;
   //const Double_t integratedlumi = 1799.843; //for Fakes
