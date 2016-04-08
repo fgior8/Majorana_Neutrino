@@ -19,6 +19,7 @@
 #include "MuonSelection.h"
 #include "ElectronSelection.h"
 #include "JetSelection.h"
+#include "GenParticleSelection.h"
 
 #include <iostream>
 #include <cmath>
@@ -30,8 +31,10 @@ class Analyzer : public Data {
   const Bool_t debug = false; 
   //const Double_t integratedlumi = 199.149; // for Fakes
   const Double_t integratedlumi = 2318.267; // Signal
+  const Bool_t GenMatch = true;
   const Double_t Mass_Z = 91.1876;
   const Double_t Mass_W = 80.398;
+  const Double_t Mass_Mu = 0.105658; // GeV
 
   //SF parametrization
   TFile *MuSF_trig, *ElSF_trig, *MuElSF_trig;
@@ -58,6 +61,7 @@ class Analyzer : public Data {
   Double_t MCweight, weight;
   
   MuonSel Muon;
+  GenSelection Gen;
   ElectronSel Electron;
   JJ Jets;
 
@@ -78,6 +82,7 @@ class Analyzer : public Data {
   std::vector<Jet> jetColl;
   std::vector<Lepton> muonSelected;
   std::vector<Lepton> electronColl;
+  std::vector<Lepton> genColl;
 
   static const Int_t nintpT=9;
   Double_t *arraypT;

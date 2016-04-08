@@ -1,4 +1,5 @@
 #include "Analyzer.h"
+#include "WeightChargeFlip.C"
 
 Analyzer::Analyzer() {
 
@@ -700,6 +701,7 @@ void Analyzer::LoopQFlip() {
   #define MUMU 0
   
 
+
   TString cut_name[] = {"two_mu","probe","no_jets","low_MET","SS","OS"};
   TString channel_name[] = {"mumu"};
   ncuts=sizeof(cut_name)/sizeof(TString);
@@ -714,6 +716,7 @@ void Analyzer::LoopQFlip() {
   TH2F ***h_pt_eta = new TH2F**[ncuts];
   h_muons = new MuonPlots**[ncuts];
   h_jets = new JetPlots**[ncuts];
+  TH1F *h_craft_SS, *h_craft_OS, *h_mass_pred_SS;
 
   for (UInt_t i=0;i<ncuts;i++) {
     h_invPt[i] = new TH1F*[nchannels];
@@ -734,6 +737,7 @@ void Analyzer::LoopQFlip() {
       h_tagPt[i][j] = new TH1F("h_tagPt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
       h_probePt[i][j] = new TH1F("h_probePt_"+cut_name[i]+"_"+channel_name[j],";P_{T} (GeV)",100,0,100);
       h_mass[i][j] = new TH1F("h_mass_"+cut_name[i]+"_"+channel_name[j],";M(#mu#mu)",50,0,200);
+
       h_charge[i][j] = new TH1F("h_charge_"+cut_name[i]+"_"+channel_name[j],"",3,-2,2);
       h_MET[i][j] = new TH1F("h_MET_"+cut_name[i]+"_"+channel_name[j],";MET (GeV)",20,0,150);
       h_nvtx[i][j] = new TH1F("h_nvtx_"+cut_name[i]+"_"+channel_name[j],";n Vertices",60,0,60);
@@ -741,6 +745,10 @@ void Analyzer::LoopQFlip() {
       h_muons[i][j]     = new MuonPlots    ("muons_"    +cut_name[i]+"_"+channel_name[j]);
       h_jets[i][j]     = new JetPlots    ("jets_"    +cut_name[i]+"_"+channel_name[j]);
     }
+    Double_t edges[7] = {10,20,30,50,100,120,1000};
+    h_craft_SS = new TH1F("h_CRAFT_SS_mumu",";P_{T} (GeV);",6,edges);
+    h_craft_OS = new TH1F("h_CRAFT_OS_mumu",";P_{T} (GeV);",6,edges);
+    h_mass_pred_SS = new TH1F("h_mass_pred_SS",";M(#mu#mu) predicted",50,0,200);
 
   fBTagSF = new BTagSFUtil("CSVM");
 
@@ -763,7 +771,7 @@ void Analyzer::LoopQFlip() {
   for (Long64_t jentry = 0; jentry < nentries; jentry++ ) {
     //clearing vectors
     selectionStep.clear();    selectChannel.clear();
-    muonColl.clear();
+    muonColl.clear(); genColl.clear();
     electronColl.clear(); jetColl.clear();
     
     if (debug) cout<< "Event number " <<jentry<<endl;
@@ -784,7 +792,7 @@ void Analyzer::LoopQFlip() {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
       //if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
-      if ( trigger.Contains("HLT_IsoMu27_v") && ps>0) {
+      if ( trigger.Contains("HLT_IsoMu22_v") && ps>0) {
         triggerOK = true;
         break;
       }
@@ -821,6 +829,57 @@ void Analyzer::LoopQFlip() {
     Jets.SetEta(2.4);
     Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
 
+    if(!isData && GenMatch) {
+      Gen.SetPt(10);
+      Gen.SetEta(3.0);
+      Gen.SetBSdxy(0.20);
+      //Gen.GenSelection(*GenParticleEta, *GenParticlePt, *GenParticlePx, *GenParticlePy, *GenParticlePz, *GenParticleEnergy, *GenParticleVX, *GenParticleVY, *GenParticleVZ, VertexX->at(VertexN), VertexY->at(VertexN), VertexZ->at(VertexN), *GenParticlePdgId, *GenParticleStatus, *GenParticleNumDaught, *GenParticleMotherIndex, genColl);
+      Gen.GenSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, Mass_Mu, genColl);
+
+      std::vector<Lepton> muonGenColl;
+      std::vector<Lepton> muonRejColl;
+      if(GenMatch) {
+        bool match = false;
+        double dRtmp = 1;
+        double deltaR = 1;
+        std::vector<UInt_t> genMatch;
+        UInt_t gen = -1;
+        // Loop over POG collection
+        for(UInt_t i = 0; i < muonColl.size(); i++) {
+          for(UInt_t j = 0; j < genColl.size(); j++) {
+            // Skip already matched gen particles
+            if(std::find(genMatch.begin(), genMatch.end(), j) != genMatch.end()) continue;
+            dRtmp = muonColl[i].lorentzVec().DeltaR(genColl[j].lorentzVec());
+            // Find match with smallest DeltaR (always < 0.3)
+            if(dRtmp < 0.3 && dRtmp < deltaR) {
+              match = true;
+              deltaR = dRtmp;
+              gen = j; // Index of best match
+            }
+            // Build vector of matches and rejects
+            if(match) {
+              muonGenColl.push_back(muonColl[i]);
+              genMatch.push_back(gen);
+            }
+            else muonRejColl.push_back(muonColl[i]);
+            match = false;
+            dRtmp = 1;
+            deltaR = 1;
+            gen = -1;
+
+          }
+        }
+
+        if((muonGenColl.size() + muonRejColl.size()) != muonColl.size()) {
+          cout << "Not all particles accounted for!" << endl;
+          return;
+        }
+        muonColl.clear();
+        muonColl = muonGenColl;
+
+      }
+    }
+
     if(debug) cout<< "DONE object selection" <<endl;
 
     if(debug) cout<< "setting MET" <<endl;
@@ -831,6 +890,7 @@ void Analyzer::LoopQFlip() {
     if(debug) cout << "Start filling plots" << endl;
 
     bool twoMu = (muonColl.size()==2) && (electronColl.size()==0);
+    twoMu &= (muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M() > 20;
     if(twoMu) {
       if(debug) cout << "two muons" << endl;
       // Set SFs
@@ -935,6 +995,7 @@ void Analyzer::LoopQFlip() {
         h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
         for (UInt_t i = 0; i < muonColl.size(); i++)
           h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+        h_craft_SS->Fill(muonColl[probe].lorentzVec().Pt(), weight);
       }
       else if((muonColl[0].charge() * muonColl[1].charge()) < 0) {
         cut = OS;
@@ -948,6 +1009,9 @@ void Analyzer::LoopQFlip() {
         h_pt_eta[cut][channel]->Fill( muonColl[probe].lorentzVec().Pt(), muonColl[probe].eta(), weight);
         for (UInt_t i = 0; i < muonColl.size(); i++)
           h_muons[cut][channel]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+        h_craft_OS->Fill(muonColl[probe].lorentzVec().Pt(), weight);
+        double Qweight = WeightChargeFlip(muonColl[probe].lorentzVec().Pt(),muonColl[tag].lorentzVec().Pt());
+        h_mass_pred_SS->Fill((muonColl[0].lorentzVec() + muonColl[1].lorentzVec()).M(), Qweight);
       }
     }
 
@@ -976,6 +1040,10 @@ void Analyzer::LoopQFlip() {
       outfile->cd( "Jets" );
       h_jets[i][j]->Write();
     }
+    outfile->cd( "Muons" );
+    h_craft_SS->Write();
+    h_craft_OS->Write();
+    h_mass_pred_SS->Write();
   outfile->cd();
   outfile->Close();
   cout<<"histo written."<<endl;

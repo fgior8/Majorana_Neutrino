@@ -287,6 +287,7 @@ public :
    TBranch        *b_gen_status;   //!
    TBranch        *b_gen_pdgid;   //!
    TBranch        *b_gen_motherindex;   //!
+   TBranch        *b_gen_daughtnum;   //!
    TBranch        *b_genjet_pt;   //!
    TBranch        *b_genjet_eta;   //!
    TBranch        *b_genjet_phi;   //!
