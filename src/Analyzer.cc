@@ -762,15 +762,16 @@ void Analyzer::LoopQFlip() {
     Jets.SetEta(2.4);
     Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
 
-    if(!isData && Gen) {
+    if(!isData && GenMatch) {
       Gen.SetPt(10);
       Gen.SetEta(3.0);
       Gen.SetBSdxy(0.20);
-      Gen.GenSelection(*GenParticleEta, *GenParticlePt, *GenParticlePx, *GenParticlePy, *GenParticlePz, *GenParticleEnergy, *GenParticleVX, *GenParticleVY, *GenParticleVZ, VertexX->at(VertexN), VertexY->at(VertexN), VertexZ->at(VertexN), *GenParticlePdgId, *GenParticleStatus, *GenParticleNumDaught, *GenParticleMotherIndex, genColl);
+      //Gen.GenSelection(*GenParticleEta, *GenParticlePt, *GenParticlePx, *GenParticlePy, *GenParticlePz, *GenParticleEnergy, *GenParticleVX, *GenParticleVY, *GenParticleVZ, VertexX->at(VertexN), VertexY->at(VertexN), VertexZ->at(VertexN), *GenParticlePdgId, *GenParticleStatus, *GenParticleNumDaught, *GenParticleMotherIndex, genColl);
+      Gen.GenSelection(*gen_eta, *gen_pt, *gen_energy, *gen_pdgid, *gen_Status, *gen_motherindex, genColl);
 
       std::vector<Lepton> muonGenColl;
       std::vector<Lepton> muonRejColl;
-      if(Gen) {
+      if(GenMatch) {
         bool match = false;
         double dRtmp = 1;
         double deltaR = 1;

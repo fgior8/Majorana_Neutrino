@@ -33,7 +33,7 @@ covariance.o : matrix_inverse.h
 
 
 analyzer: $(SRCDIR)runAnalyzer.cc 
-	$(CXX) $(CXXFLAGS) -I $(INCLUDEDIR) $(SRCDIR)mt2bisect.cc $(SRCDIR)Data.cc $(SRCDIR)ChainMaker.cc $(SRCDIR)XSlist.cc $(SRCDIR)OtherFunctions.cc $(SRCDIR)SignalPlots.cc $(SRCDIR)BTagSFUtil.C $(SRCDIR)StdPlots.cc $(SRCDIR)JetPlots.cc $(SRCDIR)ElectronPlots.cc $(SRCDIR)MuonPlots.cc $(SRCDIR)SelectionFunctions.cc $(SRCDIR)LeptonSelection.cc $(SRCDIR)ElectronSelection.cc $(SRCDIR)MuonSelection.cc $(SRCDIR)JetSelection.cc $(SRCDIR)WeightChargeFlip.C $(SRCDIR)Analyzer.cc $(SRCDIR)runAnalyzer.cc \
+	$(CXX) $(CXXFLAGS) -I $(INCLUDEDIR) $(SRCDIR)mt2bisect.cc $(SRCDIR)Data.cc $(SRCDIR)ChainMaker.cc $(SRCDIR)XSlist.cc $(SRCDIR)OtherFunctions.cc $(SRCDIR)SignalPlots.cc $(SRCDIR)BTagSFUtil.C $(SRCDIR)StdPlots.cc $(SRCDIR)JetPlots.cc $(SRCDIR)ElectronPlots.cc $(SRCDIR)MuonPlots.cc $(SRCDIR)SelectionFunctions.cc $(SRCDIR)LeptonSelection.cc $(SRCDIR)ElectronSelection.cc $(SRCDIR)MuonSelection.cc $(SRCDIR)JetSelection.cc $(SRCDIR)GenSelection.cc $(SRCDIR)WeightChargeFlip.C $(SRCDIR)Analyzer.cc $(SRCDIR)runAnalyzer.cc \
 	$(ROOTCFLAGS) \
 	$(ROOTLIBS) \
 	$(FFTWIND) $(FFTWLIB) \

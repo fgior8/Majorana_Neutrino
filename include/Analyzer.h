@@ -19,6 +19,7 @@
 #include "MuonSelection.h"
 #include "ElectronSelection.h"
 #include "JetSelection.h"
+#include "GenSelection.h"
 
 #include <iostream>
 #include <cmath>
@@ -29,7 +30,7 @@ class Analyzer : public Data {
 
 
   const Bool_t debug = false;
-  const Bool_t Gen = true;
+  const Bool_t GenMatch = true;
   const Double_t integratedlumi = 2300; //2.3fb-1 for HLT_IsoMu27_v
   //const Double_t integratedlumi = 174.34;
   //const Double_t integratedlumi = 1799.843; //for Fakes
@@ -53,6 +54,7 @@ class Analyzer : public Data {
   Double_t MCweight, weight;
   
   MuonSel Muon;
+  GenSel Gen;
   ElectronSel Electron;
   JJ Jets;
 
