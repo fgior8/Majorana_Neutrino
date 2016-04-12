@@ -1,5 +1,7 @@
 #include "Analyzer.h"
 #include "WeightChargeFlip.C"
+#include "rochcor2015.h"
+#include "RoccoR.h"
 
 Analyzer::Analyzer() {
 
@@ -829,12 +831,24 @@ void Analyzer::LoopQFlip() {
     Jets.SetEta(2.4);
     Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
 
+
+/*
+    for(int i = 0; i < muonColl.size(); i++) {
+      rochcor2015 *rmcor = new rochcor2015();
+      float qter = 1.0;
+      if(!isData)
+        rmcor->momcor_mc(muonColl[i].lorentzVec(), muonColl[i].charge(), 0, qter);
+      else if(isData)
+        rmcor->momcor_data(muonColl[i].lorentzVec(), muonColl[i].charge(), 0, qter);
+    }
+*/
+
     if(!isData && GenMatch) {
       Gen.SetPt(10);
       Gen.SetEta(3.0);
       Gen.SetBSdxy(0.20);
       //Gen.GenSelection(*GenParticleEta, *GenParticlePt, *GenParticlePx, *GenParticlePy, *GenParticlePz, *GenParticleEnergy, *GenParticleVX, *GenParticleVY, *GenParticleVZ, VertexX->at(VertexN), VertexY->at(VertexN), VertexZ->at(VertexN), *GenParticlePdgId, *GenParticleStatus, *GenParticleNumDaught, *GenParticleMotherIndex, genColl);
-      Gen.GenSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, Mass_Mu, genColl);
+      Gen.GenParticleSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, Mass_Mu, genColl);
 
       std::vector<Lepton> muonGenColl;
       std::vector<Lepton> muonRejColl;
@@ -856,20 +870,19 @@ void Analyzer::LoopQFlip() {
               deltaR = dRtmp;
               gen = j; // Index of best match
             }
-            // Build vector of matches and rejects
-            if(match) {
-              muonGenColl.push_back(muonColl[i]);
-              genMatch.push_back(gen);
-            }
-            else muonRejColl.push_back(muonColl[i]);
-            match = false;
-            dRtmp = 1;
-            deltaR = 1;
-            gen = -1;
-
           }
-        }
+          // Build vector of matches and rejects
+          if(match) {
+            muonGenColl.push_back(muonColl[i]);
+            genMatch.push_back(gen);
+          }
+          else muonRejColl.push_back(muonColl[i]);
+          match = false;
+          dRtmp = 1;
+          deltaR = 1;
+          gen = -1;
 
+        }
         if((muonGenColl.size() + muonRejColl.size()) != muonColl.size()) {
           cout << "Not all particles accounted for!" << endl;
           return;

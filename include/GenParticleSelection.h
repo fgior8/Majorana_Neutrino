@@ -30,7 +30,7 @@ class GenSelection : public Lep {
   void GenJetSelection(Double_t *Gen_px, Double_t *Gen_py, Double_t *Gen_pz, Double_t *Gen_energy, Int_t *Gen_Flavour, vector<Jet>& bquarkColl, vector<Jet>& RecojetColl, vector<Jet>& GenjetColl);
 */
 
-  void GenSelection::GenPartSelection(std::vector<float> Eta, std::vector<float> Phi, std::vector<float> Pt, std::vector<float> Energy, std::vector<int> PdgId, std::vector<int> Status, std::vector<int> MotherId, double Mass, std::vector<Lepton>& leptonColl);
+  void GenParticleSelection(std::vector<float> Eta, std::vector<float> Phi, std::vector<float> Pt, std::vector<float> Energy, std::vector<int> PdgId, std::vector<int> Status, std::vector<int> MotherId, double Mass, std::vector<Lepton>& leptonColl);
 
 };
 
