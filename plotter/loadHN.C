@@ -7,7 +7,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   const double luminosity = 1.0;
   //  const double luminosity = 0.004;
-  TString ver = "7";
+  TString ver = "8";
 
   const TString directory = "/uscms/home/byates/CMSSW_7_6_4/src/Majorana_Neutrino/test/histo/";
   std::vector<TString> classe;
@@ -217,7 +217,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   if (signal && data) {
     //filename.push_back(directory+"SingleMuon_"+ver+".root");
-    filename.push_back(directory+"SingleMuon_5.root");
+    filename.push_back(directory+"SingleMuon_6.root");
     legendname.push_back("Data");
     plotlabel.push_back("Data");
     color.push_back(kBlack); linecol.push_back(kBlack);
