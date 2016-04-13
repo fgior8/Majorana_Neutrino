@@ -107,7 +107,7 @@ void Analyzer::SetWeight(TString name) {
   MCweight = integratedlumi * getXS(name);
   // lumi *  cs(pb) * gen filter efficiency / MCevents
   name.Contains("amcatnlo") ? MCatNLO=true : MCatNLO=false; 
-  name.Contains("Data") ? isData=true : isData=false;
+  (name.Contains("DoubleMuon") || name.Contains("SingleMuon")) ? isData=true : isData=false;
   if(isData) MCweight = 1;
   cout<<"MCweight = "<<MCweight<<endl;
 }
@@ -119,7 +119,7 @@ void Analyzer::SetEvtN(Long64_t events) {
 
 void Analyzer::Loop() {
   TH2F *FRhisto;
-  TFile *infile = new TFile("histoFR/Total_FRcorr40_2.root");
+  TFile *infile = new TFile("/uscms/home/fgior8/commons/ScaleFactors/Total_FRcorr40_2.root");
   infile->cd();
   TDirectory *dir=gDirectory;
   dir->GetObject("h_FOrate3",FRhisto);
@@ -307,10 +307,10 @@ void Analyzer::Loop() {
 
     MET = met_pt->at(0);
     MET_phi = met_phi->at(0);
-    if (isData && muonLooseColl.size()<2) continue;
-    if (!isData && muonColl.size()<2) continue;    
+    if (IsData && muonLooseColl.size()<2) continue;
+    if (!IsData && muonColl.size()<2) continue;    
     // applying scaling factor for ID and triggers (now that we have selected the event type)
-    if (!isData) {
+    if (!IsData) {
       //trigger SF only for emu but applied to both FIXME
       weight *= hmueTriggerSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[0].lorentzVec().Eta()),fabs(muonColl[1].lorentzVec().Eta()) ) );
       //ID SF applied per lepton
@@ -378,11 +378,9 @@ void Analyzer::Loop() {
 	SingleFake=SinglebackGround(FRhisto, muonLooseNotTightColl, lep0, singleFake, dataType, weight);
 	DoubleANDSinglebkg(muonColl, lep0, muonLooseNotTightColl, lep1, doubleANDsingleFake, dataType);
         for (Int_t i=0; i<muonLooseColl.size(); i++) {
-cout << " filling muons " << endl;
           h_muons_singlefakes[cut][channel]->Fill(SingleFake*weight, (Int_t) muonLooseColl.size(), muonLooseColl[i].lorentzVec(), muonLooseColl[i].charge(), muonLooseColl[i].relIso(), muonLooseColl[i].chiNdof(), muonLooseColl[i].dxy_BS(), muonLooseColl[i].dz_BS());
           h_muons_totalfakes[cut][channel]->Fill(SingleFake*weight, (Int_t) muonLooseColl.size(), muonLooseColl[i].lorentzVec(), muonLooseColl[i].charge(), muonLooseColl[i].relIso(), muonLooseColl[i].chiNdof(), muonLooseColl[i].dxy_BS(), muonLooseColl[i].dz_BS());
         }
-cout << " filling fakes " << endl;
         h_singlefakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, SingleFake*weight, channel, cut);
 	h_totalfakes[cut][channel]->Fill(nGoodPV, MET, MET_phi, muonLooseColl, jetColl, SingleFake*weight, channel, cut);
 	muonSelected.clear();
@@ -787,7 +785,7 @@ void Analyzer::LoopQFlip() {
     // Vertex Select
     if ( goodVertices<1 ) continue;
     // GOLD JSON
-    if (isData && lumiMaskGold<1) continue;
+    if (IsData && lumiMaskGold<1) continue;
 
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
@@ -836,14 +834,14 @@ void Analyzer::LoopQFlip() {
     for(int i = 0; i < muonColl.size(); i++) {
       rochcor2015 *rmcor = new rochcor2015();
       float qter = 1.0;
-      if(!isData)
+      if(!IsData)
         rmcor->momcor_mc(muonColl[i].lorentzVec(), muonColl[i].charge(), 0, qter);
-      else if(isData)
+      else if(IsData)
         rmcor->momcor_data(muonColl[i].lorentzVec(), muonColl[i].charge(), 0, qter);
     }
 */
 
-    if(!isData && GenMatch) {
+    if(!IsData && GenMatch) {
       Gen.SetPt(10);
       Gen.SetEta(3.0);
       Gen.SetBSdxy(0.20);
@@ -908,7 +906,7 @@ void Analyzer::LoopQFlip() {
       if(debug) cout << "two muons" << endl;
       // Set SFs
       float muon_id_iso_scale_factor =1.;
-      if(!isData) weight *= muon_id_iso_scale_factor;
+      if(!IsData) weight *= muon_id_iso_scale_factor;
 
       cut = TWOMU;
       channel = MUMU;

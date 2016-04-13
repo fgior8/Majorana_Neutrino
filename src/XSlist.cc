@@ -39,6 +39,10 @@ float getXS(TString MCsample) {
     eventXS=16.9/985600.0;
   if (MCsample == "WpWpJJ_EWK_TuneCUETP8M1_13TeV-madgraph-pythia8")
     eventXS=0.02064/145800.0; 
+  if (MCsample == "WpWpJJ_QCD_TuneCUETP8M1_13TeV-madgraph-pythia8")
+    eventXS=0.01538/120000.0;
+  if (MCsample == "WW_DoubleScattering_13TeV-pythia8")
+    eventXS=1.640/844954.0;
  
   if (MCsample == "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8") 
     eventXS=2960198.4/31680404.0;

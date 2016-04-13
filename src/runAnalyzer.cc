@@ -83,8 +83,8 @@ int main (int argc, const char* argv[]) {
   Pippo.SetWeight(hname);
   cout << "Saved in " << hname << endl;  
   //Pippo.LoopFR();
-  Pippo.LoopQFlip();
-  //Pippo.Loop();
+  //Pippo.LoopQFlip();
+  Pippo.Loop();
 
 cout << endl << endl;
 }
