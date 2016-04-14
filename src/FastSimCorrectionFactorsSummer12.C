@@ -543,6 +543,6 @@ void BTagSFUtil::GetFastSimPayload(TString BTagAlgorithm, TString FastSimDataset
       
     }
     
-  } else cout << "GetFastSimPayload::Error CFs for " << BTagAlgorithm << " not available" << endl;
+  } else std::cout << "GetFastSimPayload::Error CFs for " << BTagAlgorithm << " not available" << std::endl;
   
 }

@@ -45,6 +45,7 @@ class Analyzer : public Data {
   //SF
 
   Bool_t isData, MCatNLO;
+  Bool_t isBtag;
   TString completename, treename;
   TFile *outfile;
   Long64_t entrieslimit;
@@ -96,36 +97,7 @@ class Analyzer : public Data {
   TH1F *h_prova;
   TH1F *h_VertexNoReweight, *h_VertexPostReweight;
 
-  ///Tree for optimization//////
-  TFile *outfileTree;
-  // Trees
-  TTree *AnalysisTree;
-  // Branches
-  int TNPV;
-  int TNJets;     
-  int TNJetsBtag;
-  int TNMuon;
-  int TNElec;
-  float TWeight;
-  float TMET;
-  float TMET_Phi;
-  float THT;
-  float TMT2ll;
-  float TMT2bb;
-  float TMT2lblb;
-  TLorentzVector TMuon_Lorentz[20];
-  TLorentzVector TElec_Lorentz[20];
-  TLorentzVector TJet_Lorentz[50];
-  Float_t TJet_discriminant[50];
-  TLorentzVector TBJet_Lorentz[30];
-  Float_t TMuon_Charge[20];
-  Float_t TElec_Charge[20];
-
-  //done optimization tree variables
-
  public:
-  static const Bool_t MC_pu = false; 
-
 
   Analyzer();
   ~Analyzer();

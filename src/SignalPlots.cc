@@ -1,17 +1,17 @@
 #include "SignalPlots.h"
 
 SignalPlots::SignalPlots(TString name) {
-  h_jjmass =         new TH1F("h_dijetsmass_"    + name,"Invariant mass of the two leading jets",100,0,1000);
+  h_jjmass =         new TH1F("h_dijetsmass_"    + name,"Invariant mass of the two leading jets",200,0,2000);
   h_llmass =         new TH1F("h_llmass_"        + name,"Invariant mass of the two leading muons",100,0,1000);
-  h_l1jjmass =       new TH1F("h_l1jjmass_"      + name,"Invariant mass of the leading muon plus jets",100,0,1000);
-  h_l2jjmass =       new TH1F("h_l2jjmass_"      + name,"Invariant mass of the trailing muon plus jets",100,0,1000);
-  h_lljjmass =       new TH1F("h_lljjmass_"      + name,"Invariant mass of the four particles",200,0,2000);
-  h_MET =            new TH1F("h_MET_"           + name,"Missing Et",100,0.0,500.0);
+  h_l1jjmass =       new TH1F("h_l1jjmass_"      + name,"Invariant mass of the leading muon plus jets",200,0,2000);
+  h_l2jjmass =       new TH1F("h_l2jjmass_"      + name,"Invariant mass of the trailing muon plus jets",200,0,2000);
+  h_lljjmass =       new TH1F("h_lljjmass_"      + name,"Invariant mass of the four particles",400,0,4000);
+  h_MET =            new TH1F("h_MET_"           + name,"Missing Et",200,0.0,1000.0);
   h_MET_phi =        new TH1F("h_MET_phi_"       + name,"Missing Et #phi",100,-3.14,3.14);
   h_MT2ll =          new TH1F("h_MT2ll_"         + name,"MT2(ll)",50,0.0,250.0);
   h_MT2bb =          new TH1F("h_MT2bb_"         + name,"MT2(bb)",100,80.0,580.0);
   h_MT2lblb =        new TH1F("h_MT2lblb_"       + name,"MT2(lblb)",110,0.0,550.0);
-  h_dilepPt =        new TH1F("h_dilepPt_"       + name,"Sum dilepton p_{T}",100,0.0,500.0);
+  h_dilepPt =        new TH1F("h_dilepPt_"       + name,"Sum dilepton p_{T}",200,0.0,1000.0);
   h_cosTheta1 =      new TH1F("h_cosTheta1_"     + name,"cos#theta first muon",100,-1,1);
   h_cosTheta2 =      new TH1F("h_cosTheta2_"     + name,"cos#theta second muon",100,-1,1);
   h_DeltaPhi =       new TH1F("h_DeltaPhi_"      + name,"#Delta#phi between two muons",100,0.0,3.15);

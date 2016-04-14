@@ -191,7 +191,7 @@ void Analyzer::Loop() {
 
   if (debug) cout<< "loop begins" <<endl;
 
-  fBTagSF = new BTagSFUtil("CSVM");
+  fBTagSF = new BTagSFUtil("comb", "CSVv2", "Medium", 0, "", 123);
 
   if (debug) cout<< "PU histos loaded" <<endl;
 
@@ -283,7 +283,7 @@ void Analyzer::Loop() {
     Electron.SetBSdz(0.10);
     Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_snu, *electrons_dxy, *electrons_dz, electronColl);
     
-    Jets.SetPt(30);
+    Jets.SetPt(20);
     Jets.SetEta(2.4);
     Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
 
@@ -300,10 +300,13 @@ void Analyzer::Loop() {
 	h_electrons[0][0]->Fill(weight, (Int_t) electronColl.size(), electronColl[i].lorentzVec(), electronColl[i].charge(), electronColl[i].relIso(), electronColl[i].dxy_BS(), electronColl[i].dz_BS());
       }
     }
+    isBtag=false;
     if(jetColl.size()>0)
       for (int i=0; i<jetColl.size(); i++) {
 	index=jetColl[i].ijet();
 	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
+        if (fBTagSF->IsTagged(jets_CSVInclV2->at(index), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+          isBtag=true;
       }
 
     MET = met_pt->at(0);
@@ -348,6 +351,9 @@ void Analyzer::Loop() {
 	  selectionStep.push_back(4);
 	if (jetColl.size()>1) {
 	  selectionStep.push_back(5);
+          if (isBtag) selectionStep.push_back(7);
+          else if (MET>50) selectionStep.push_back(6);
+          else selectionStep.push_back(8);
 	}
       }
     }
@@ -449,7 +455,7 @@ void Analyzer::LoopFR() {
 
   if (debug) cout<< "loop begins" <<endl;
 
-  fBTagSF = new BTagSFUtil("CSVM");
+  //fBTagSF = new BTagSFUtil("comb", "CSVv2", "Medium", 0, "", 123);
 
   // once we have data we must look a the pileup
   //  reweightPU = new ReweightPU("/uscms_data/d2/fgior8/LQntuple_18/CMSSW_5_3_14_patch2_LQ/src/code/MyDataPileupHistogram_69400.root");
@@ -752,7 +758,7 @@ void Analyzer::LoopQFlip() {
     h_craft_OS = new TH1F("h_CRAFT_OS_mumu",";P_{T} (GeV);",6,edges);
     h_mass_pred_SS = new TH1F("h_mass_pred_SS",";M(#mu#mu) predicted",50,0,200);
 
-  fBTagSF = new BTagSFUtil("CSVM");
+    //fBTagSF = new BTagSFUtil("comb", "CSVv2", "Medium", 0, "", 123);
 
   // once we have data we must look a the pileup
   //  reweightPU = new ReweightPU("/uscms_data/d2/fgior8/Lntuple_18/CMSSW_5_3_14_patch2_LQ/src/code/MyDataPileupHistogram_69400.root");
