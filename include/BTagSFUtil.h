@@ -1,21 +1,16 @@
-#ifndef BTagSFUtil_h
-#define BTagSFUtil_h
-
 #include "BTagCalibrationStandalone.h"
 #include <Riostream.h>
 #include "TRandom3.h"
 #include "TMath.h"
 #include "TF1.h"
 #include <iostream>
-
 using namespace std;
 
 class BTagSFUtil{
 
  public:
-  
+    
   BTagSFUtil(string MeasurementType, string BTagAlgorithm, TString OperatingPoint, int SystematicIndex = 0, TString FastSimDataset = "", int Seed = 0);
-
   ~BTagSFUtil();
 
   float GetJetSF(int JetFlavor, float JetPt, float JetEta);
@@ -61,5 +56,3 @@ class BTagSFUtil{
     
 };
 
-
-#endif

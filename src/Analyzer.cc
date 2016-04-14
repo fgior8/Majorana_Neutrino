@@ -191,7 +191,7 @@ void Analyzer::Loop() {
 
   if (debug) cout<< "loop begins" <<endl;
 
-  fBTagSF = new BTagSFUtil("comb", "CSVv2", "Medium", 0, "", 123);
+  fBTagSF = new BTagSFUtil("mujets", "CSVv2", "Medium");
 
   if (debug) cout<< "PU histos loaded" <<endl;
 

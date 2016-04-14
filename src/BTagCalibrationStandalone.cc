@@ -27,12 +27,7 @@ BTagEntry::Parameters::Parameters(
   ptMax(pt_max),
   discrMin(discr_min),
   discrMax(discr_max)
-{
-  std::transform(measurementType.begin(), measurementType.end(),
-                 measurementType.begin(), ::tolower);
-  std::transform(sysType.begin(), sysType.end(),
-                 sysType.begin(), ::tolower);
-}
+{}
 
 BTagEntry::BTagEntry(const std::string &csvLine)
 {
@@ -73,128 +68,50 @@ throw std::exception();
   }
 
   // make parameters
-  unsigned op = atoi(vec[0].c_str());
-  if (op > 3) {
+  if (stoi(vec[0]) > 3) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; OperatingPoint > 3: "
           << csvLine;
 throw std::exception();
   }
-  unsigned jf = atoi(vec[3].c_str());
-  if (jf > 2) {
+  if (stoi(vec[3]) > 2) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; JetFlavor > 2: "
           << csvLine;
 throw std::exception();
   }
   params = BTagEntry::Parameters(
-    BTagEntry::OperatingPoint(op),
+    BTagEntry::OperatingPoint(stoi(vec[0])),
     vec[1],
     vec[2],
-    BTagEntry::JetFlavor(jf),
-    atof(vec[4].c_str()),
-    atof(vec[5].c_str()),
-    atof(vec[6].c_str()),
-    atof(vec[7].c_str()),
-    atof(vec[8].c_str()),
-    atof(vec[9].c_str())
+    BTagEntry::JetFlavor(stoi(vec[3])),
+    stof(vec[4]),
+    stof(vec[5]),
+    stof(vec[6]),
+    stof(vec[7]),
+    stof(vec[8]),
+    stof(vec[9])
   );
 }
 
 BTagEntry::BTagEntry(const std::string &func, BTagEntry::Parameters p):
   formula(func),
   params(p)
-{
-  TF1 f1("", formula.c_str());  // compile formula to check validity
-  if (f1.IsZombie()) {
-std::cerr << "ERROR in BTagCalibration: "
-          << "Invalid func string; formula does not compile: "
-          << func;
-throw std::exception();
-  }
-}
+{}
 
 BTagEntry::BTagEntry(const TF1* func, BTagEntry::Parameters p):
   formula(std::string(func->GetExpFormula("p").Data())),
   params(p)
-{
-  if (func->IsZombie()) {
-std::cerr << "ERROR in BTagCalibration: "
-          << "Invalid TF1 function; function is zombie: "
-          << func->GetName();
-throw std::exception();
-  }
-}
+{}
 
 // Creates chained step functions like this:
 // "<prevous_bin> : x<bin_high_bound ? bin_value : <next_bin>"
 // e.g. "x<0 ? 1 : x<1 ? 2 : x<2 ? 3 : 4"
-std::string th1ToFormulaLin(const TH1* hist) {
-  int nbins = hist->GetNbinsX();
-  TAxis const* axis = hist->GetXaxis();
-  std::stringstream buff;
-  buff << "x<" << axis->GetBinLowEdge(1) << " ? 0. : ";  // default value
-  for (int i=1; i<nbins+1; ++i) {
-    char tmp_buff[50];
-    sprintf(tmp_buff,
-            "x<%g ? %g : ",  // %g is the smaller one of %e or %f
-            axis->GetBinUpEdge(i),
-            hist->GetBinContent(i));
-    buff << tmp_buff;
-  }
-  buff << 0.;  // default value
-  return buff.str();
-}
-
-// Creates step functions making a binary search tree:
-// "x<mid_bin_bound ? (<left side tree>) : (<right side tree>)"
-// e.g. "x<2 ? (x<1 ? (x<0 ? 0:0.1) : (1)) : (x<4 ? (x<3 ? 2:3) : (0))"
-std::string th1ToFormulaBinTree(const TH1* hist, int start=0, int end=-1) {
-  if (end == -1) {                      // initialize
-    start = 0.;
-    end = hist->GetNbinsX()+1;
-    TH1* h2 = (TH1*) hist->Clone();
-    h2->SetBinContent(start, 0);  // kill underflow
-    h2->SetBinContent(end, 0);    // kill overflow
-    std::string res = th1ToFormulaBinTree(h2, start, end);
-    delete h2;
-    return res;
-  }
-  if (start == end) {                   // leave is reached
-    char tmp_buff[20];
-    sprintf(tmp_buff, "%g", hist->GetBinContent(start));
-    return std::string(tmp_buff);
-  }
-  if (start == end - 1) {               // no parenthesis for neighbors
-    char tmp_buff[70];
-    sprintf(tmp_buff,
-            "x<%g ? %g:%g",
-            hist->GetXaxis()->GetBinUpEdge(start),
-            hist->GetBinContent(start),
-            hist->GetBinContent(end));
-    return std::string(tmp_buff);
-  }
-
-  // top-down recursion
-  std::stringstream buff;
-  int mid = (end-start)/2 + start;
-  char tmp_buff[25];
-  sprintf(tmp_buff,
-          "x<%g ? (",
-          hist->GetXaxis()->GetBinUpEdge(mid));
-  buff << tmp_buff
-       << th1ToFormulaBinTree(hist, start, mid)
-       << ") : ("
-       << th1ToFormulaBinTree(hist, mid+1, end)
-       << ")";
-  return buff.str();
-}
-
 BTagEntry::BTagEntry(const TH1* hist, BTagEntry::Parameters p):
   params(p)
 {
   int nbins = hist->GetNbinsX();
-  TAxis const* axis = hist->GetXaxis();
+  auto axis = hist->GetXaxis();
 
   // overwrite bounds with histo values
   if (params.operatingPoint == BTagEntry::OP_RESHAPING) {
@@ -205,22 +122,18 @@ BTagEntry::BTagEntry(const TH1* hist, BTagEntry::Parameters p):
     params.ptMax = axis->GetBinUpEdge(nbins);
   }
 
-  // balanced full binary tree height = ceil(log(2*n_leaves)/log(2))
-  // breakes even around 10, but lower values are more propable in pt-spectrum
-  if (nbins < 15) {
-    formula = th1ToFormulaLin(hist);
-  } else {
-    formula = th1ToFormulaBinTree(hist);
+  std::stringstream buff;
+  buff << "x<" << axis->GetBinLowEdge(1) << " ? 0. : ";  // default value
+  for (int i=1; i<nbins+1; ++i) {
+    char tmp_buff[100];
+    sprintf(tmp_buff,
+            "x<%g ? %g : ",  // %g is the smaller one of %e or %f
+            axis->GetBinUpEdge(i),
+            hist->GetBinContent(i));
+    buff << tmp_buff;
   }
-
-  // compile formula to check validity
-  TF1 f1("", formula.c_str());
-  if (f1.IsZombie()) {
-std::cerr << "ERROR in BTagCalibration: "
-          << "Invalid histogram; formula does not compile (>150 bins?): "
-          << hist->GetName();
-throw std::exception();
-  }
+  buff << 0.;  // default value
+  formula = buff.str();
 }
 
 std::string BTagEntry::makeCSVHeader()
@@ -266,7 +179,6 @@ std::string BTagEntry::trimStr(std::string str) {
     return str.substr(s, e-s+1);
 }
 
-
 #include <fstream>
 #include <sstream>
 
@@ -280,7 +192,7 @@ BTagCalibration::BTagCalibration(const std::string &taggr,
                                  const std::string &filename):
   tagger_(taggr)
 {
-  std::ifstream ifs(filename.c_str());
+  std::ifstream ifs(filename);
   readCSV(ifs);
   ifs.close();
 }
@@ -293,7 +205,7 @@ void BTagCalibration::addEntry(const BTagEntry &entry)
 const std::vector<BTagEntry>& BTagCalibration::getEntries(
   const BTagEntry::Parameters &par) const
 {
-  std::string tok = token(par);
+  auto tok = token(par);
   if (!data_.count(tok)) {
 std::cerr << "ERROR in BTagCalibration: "
           << "(OperatingPoint, measurementType, sysType) not available: "
@@ -329,13 +241,11 @@ void BTagCalibration::readCSV(std::istream &s)
 }
 
 void BTagCalibration::makeCSV(std::ostream &s) const
-{ 
-  s << tagger_ << ";" << BTagEntry::makeCSVHeader();
-  for (std::map<std::string, std::vector<BTagEntry> >::const_iterator i 
-           = data_.begin(); i != data_.end(); ++i) {
-    const std::vector<BTagEntry> &vec = i->second;
-    for (std::vector<BTagEntry>::const_iterator j 
-             = vec.begin(); j != vec.end(); ++j) {
+{
+  s << BTagEntry::makeCSVHeader();
+  for (auto i = data_.cbegin(); i != data_.cend(); ++i) {
+    auto vec = i->second;
+    for (auto j = vec.cbegin(); j != vec.cend(); ++j) {
       s << j->makeCSVLine();
     }
   }
@@ -356,7 +266,6 @@ std::string BTagCalibration::token(const BTagEntry::Parameters &par)
        << par.sysType;
   return buff.str();
 }
-
 
 
 BTagCalibrationReader::BTagCalibrationReader(const BTagCalibration* c,
@@ -381,7 +290,7 @@ double BTagCalibrationReader::eval(BTagEntry::JetFlavor jf,
 
   // search linearly through eta, pt and discr ranges and eval
   // future: find some clever data structure based on intervals
-  const std::vector<TmpEntry> &entries = tmpData_.at(jf);
+  const auto &entries = tmpData_.at(jf);
   for (unsigned i=0; i<entries.size(); ++i) {
     const BTagCalibrationReader::TmpEntry &e = entries.at(i);
     if (
@@ -404,7 +313,7 @@ double BTagCalibrationReader::eval(BTagEntry::JetFlavor jf,
 void BTagCalibrationReader::setupTmpData(const BTagCalibration* c)
 {
   useAbsEta = std::vector<bool>(4, true);
-  const std::vector<BTagEntry> &entries = c->getEntries(params);
+  const auto &entries = c->getEntries(params);
   for (unsigned i=0; i<entries.size(); ++i) {
     const BTagEntry &be = entries[i];
     BTagCalibrationReader::TmpEntry te;
@@ -429,6 +338,4 @@ void BTagCalibrationReader::setupTmpData(const BTagCalibration* c)
     }
   }
 }
-
-
 
