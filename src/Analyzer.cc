@@ -223,8 +223,8 @@ void Analyzer::Loop() {
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
-      Int_t ps = vtrigps->at(t);
-      if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
+      //Int_t ps = vtrigps->at(t);
+      if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") ) {
         triggerOK = true;
         break;
       }
@@ -238,17 +238,18 @@ void Analyzer::Loop() {
     weight=MCweight;
     //MC@NLO weight
     if(MCatNLO)
-      genWeight>=0 ? weight*=1. : weight*=-1.;
+      weight*=genWeight;
 
+    // Vertex Select
+    if ( !goodVertices ) continue;
+    // GOLD JSON
+    if (IsData && lumiMaskGold<1) continue;
+    
     h_VertexNoReweight->Fill(nGoodPV,weight);
     if (!IsData)
       weight*=puWeightGold;
     h_VertexPostReweight->Fill(nGoodPV,weight);
     
-    
-    // Vertex Select
-    if ( !goodVertices ) continue;
-
     if(debug) cout<< "object selection" <<endl;
     
     Muon.SetPt(15);
@@ -308,11 +309,12 @@ void Analyzer::Loop() {
     MET = met_pt->at(0);
     MET_phi = met_phi->at(0);
     if (IsData && muonLooseColl.size()<2) continue;
-    if (!IsData && muonColl.size()<2) continue;    
+    if (!IsData && muonColl.size()<2) continue;
+    if ( (muonLooseColl[0].lorentzVec()+muonLooseColl[1].lorentzVec()).M()<10 ) continue;
     // applying scaling factor for ID and triggers (now that we have selected the event type)
     if (!IsData) {
       //trigger SF only for emu but applied to both FIXME
-      weight *= hmueTriggerSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[0].lorentzVec().Eta()),fabs(muonColl[1].lorentzVec().Eta()) ) );
+      //weight *= hmueTriggerSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[0].lorentzVec().Eta()),fabs(muonColl[1].lorentzVec().Eta()) ) );
       //ID SF applied per lepton
       for (UInt_t i=0; i<2; i++) { //only 2 muons
         //if (muonColl[i].leptonType()=="Electron")
@@ -510,7 +512,7 @@ void Analyzer::LoopFR() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( (trigger.Contains("HLT_Mu8_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) && ps>0) {
+      if ( (trigger.Contains("HLT_Mu8_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
         triggerOK = true;
         break;
       }
@@ -524,8 +526,8 @@ void Analyzer::LoopFR() {
     weight=MCweight;
     //MC@NLO weight
     if(MCatNLO)
-      genWeight>=0 ? weight*=1. : weight*=-1.;
-    
+      weight*=genWeight;
+ 
     h_VertexNoReweight->Fill(nGoodPV,weight);
     if (!IsData)
       weight*=puWeightGold;
@@ -792,7 +794,7 @@ void Analyzer::LoopQFlip() {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
       //if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
-      if ( trigger.Contains("HLT_IsoMu22_v") && ps>0) {
+      if ( trigger.Contains("HLT_IsoMu22_v") ) {
         triggerOK = true;
         break;
       }
@@ -806,7 +808,7 @@ void Analyzer::LoopQFlip() {
     weight=MCweight;
     //MC@NLO weight
     if(MCatNLO)
-      genWeight>=0 ? weight*=1. : weight*=-1.;
+      weight*=genWeight;
     
     if(debug) cout<< "object selection" <<endl;
     

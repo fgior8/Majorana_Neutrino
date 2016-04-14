@@ -34,6 +34,8 @@ bool multiplot() {
   TFile* file[40] = {};
   Bool_t blind = true;
   Bool_t SYS_YES = false;
+  Bool_t UseFakes = true;
+  UInt_t max_file;
     
   std::vector<TString> filename;
   std::vector<TString> legendname;
@@ -61,15 +63,15 @@ bool multiplot() {
   TH1F* h_th1fsys[20][1000][20] = {}; //systematics
   
   //for normal use use the whole loop but for plotting the fakes (same file as DATA) put filename.size()-1
-  for (unsigned int ifile=0; ifile < filename.size()-1; ++ifile) {
+  UseFakes ? max_file = filename.size()-1 : max_file = filename.size();
+  for (unsigned int ifile=0; ifile < max_file; ++ifile) {
     file[ifile] = new TFile(filename[ifile],"READ");
     if (!file[ifile]) {cout << "File open error on " << filename[ifile] <<endl; return 1; }
     file[ifile]->cd();
 
     if (file[ifile]->IsOpen()) {
       for (unsigned int iplot = 0; iplot < hist1d.size(); ++iplot) {
-
-	if ( hist1d[iplot].name().Contains("Muons/") || hist1d[iplot].name().Contains("Electrons/") || hist1d[iplot].name().Contains("Jets/") ) {
+	if (hist1d[iplot].name().Contains("Electrons/") || hist1d[iplot].name().Contains("Jets/") ) {
 	  TH1F* temp = (TH1F*)file[ifile]->Get( hist1d[iplot].name() );
 	  if (!temp) {
 	    cout << "\n1D plot " << hist1d[iplot].name() << " in " << filename[ifile].Data()<< " invalid!"<<endl;
@@ -77,17 +79,29 @@ bool multiplot() {
 	  }
 	  h_th1f[ifile][iplot] = (TH1F*)temp->Clone();
 	}
+	else if (hist1d[iplot].name().Contains("muons") ) {
+	  TH1F* temp = (TH1F*)file[ifile]->Get( "Muons/"+hist1d[iplot].name() );
+	  if (!temp) {
+	    cout << "\n1D plot " << "Muons/" << hist1d[iplot].name() << " in " << filename[ifile].Data()<< " invalid!"<<endl;
+	    return 1;
+	  }
+	  h_th1f[ifile][iplot] = (TH1F*)temp->Clone();
+	  if (type[ifile] == "data" && UseFakes) { 	//false for normal
+	    // cout << " picking up muon fakes" << endl;
+	    h_th1f[ifile+1][iplot] = (TH1F*)file[ifile]->Get( "SingleFakes/"+hist1d[iplot].name()+"_sf");
+	    h_th1f[ifile+1][iplot] -> Add( (TH1F*)file[ifile]->Get( "DoubleFakes/"+hist1d[iplot].name()+"_df"),-1);
+	  }
+	}
 	else {
 	  TH1F* temp = (TH1F*)file[ifile]->Get( "Signal/"+hist1d[iplot].name() );
 	  if (!temp) {
-	    cout << "\n1D plot " << hist1d[iplot].name() << " in " << filename[ifile].Data()<< " invalid!"<<endl;
+	    cout << "\n1D plot " << "Signal/" << hist1d[iplot].name() << " in " << filename[ifile].Data()<< " invalid!"<<endl;
 	    return 1;
 	  }
-	  if (type[ifile] == "data" && false) { 	//false for normal
-	    cout << " picking up fakes" << endl;
+	  if (type[ifile] == "data" && UseFakes) { 	//false for normal
+	    // cout << " picking up signal fakes" << endl;
 	    h_th1f[ifile+1][iplot] = (TH1F*)file[ifile]->Get( "SingleFakes/"+hist1d[iplot].name()+"_sf");
 	    h_th1f[ifile+1][iplot] -> Add( (TH1F*)file[ifile]->Get( "DoubleFakes/"+hist1d[iplot].name()+"_df"),-1);
-	    cout << "fakes ok" << endl;
 	  }
 	  h_th1f[ifile][iplot] = (TH1F*)temp->Clone();
 	  if (SYS_YES) {
@@ -118,7 +132,6 @@ bool multiplot() {
   TCanvas* can2;
   // can = new TCanvas("can",""); // inherit height, width of CMS style
   can2 = new TCanvas("can2","",outputWidth,outputHeight);
-  cout << "can2" << endl;
 
   can2->Draw();
 
@@ -200,7 +213,6 @@ bool multiplot() {
   TCanvas* can;
   // can = new TCanvas("can",""); // inherit height, width of CMS style
   can = new TCanvas("can","",outputWidth,outputHeight);
-  cout << "can" << endl;
   
   TPad*    upperPad = new TPad("upperPad", "upperPad", .010, .210, .990, .990);
   TPad*    lowerPad = new TPad("lowerPad", "lowerPad", .010, .010, .990, .200);
@@ -220,37 +232,19 @@ bool multiplot() {
     
     for (unsigned int ifile=0; ifile < filename.size(); ++ifile) {
       
-      cout << filename.at(ifile) << endl;
-      cout << "set labels" << endl;
-      cout << "weight" << endl;
-      cout << weight[ifile] << endl;
       h_th1f[ifile][iplot]->Scale( weight[ifile] );
-      cout << "title" << endl;
-      cout << hist1d[iplot].title() << endl;
       h_th1f[ifile][iplot]->SetTitle( hist1d[iplot].title() );
-      cout << "xtitle" << endl;
-      cout << hist1d[iplot].Xtitle() << endl;
       h_th1f[ifile][iplot]->GetXaxis()->SetTitle( hist1d[iplot].Xtitle() );
-      cout << "x title offset" << endl;
       h_th1f[ifile][iplot]->GetXaxis()->SetTitleOffset(1.05);
-      cout << "x title size" << endl;
       h_th1f[ifile][iplot]->GetXaxis()->SetTitleSize(0.06);
-      cout << "x label size" << endl;
       h_th1f[ifile][iplot]->GetXaxis()->SetLabelSize(0.05);
-      cout << "ytitle" << endl;
-      cout << hist1d[iplot].Ytitle() << endl;
       h_th1f[ifile][iplot]->GetYaxis()->SetTitle( hist1d[iplot].Ytitle() );
-      cout << "y title offset" << endl;
       h_th1f[ifile][iplot]->GetYaxis()->SetTitleOffset(1.0);
-      cout << "y title size" << endl;
       h_th1f[ifile][iplot]->GetYaxis()->SetTitleSize(0.06);
-      cout << "y label size" << endl;
       h_th1f[ifile][iplot]->GetYaxis()->SetLabelSize(0.05);
-      cout << "done labels" << endl;
 
       // Rebinning
       if (hist1d[iplot].rebin() != 1) {
-        cout << "rebinning" << endl;
 	h_th1f[ifile][iplot]->Rebin( hist1d[iplot].rebin() );
 	if (SYS_YES && (!hist1d[iplot].name().Contains("Muons/") || !hist1d[iplot].name().Contains("Electrons/") || !hist1d[iplot].name().Contains("Jets/")) ) {
 	  for (unsigned int s=0;s<nsystematics;s++) {
@@ -261,7 +255,6 @@ bool multiplot() {
       // Change last bin to equal itself plus overflow
       // Does not work if x-axis scaling is used
       if ( hist1d[iplot].overflow() ) { 
-        cout << "overflow" << endl;
         Int_t nbins = h_th1f[ifile][iplot]->GetNbinsX();
         Double_t lastbin_value = h_th1f[ifile][iplot]->GetBinContent(nbins);
         Double_t overflow_value = h_th1f[ifile][iplot]->GetBinContent(nbins + 1);
@@ -272,14 +265,12 @@ bool multiplot() {
       Double_t norm = h_th1f[ifile][iplot]->Integral();
       if( hist1d[iplot].normalize() && norm > 0)
 	{
-          cout << "normalize unit" << endl;
 	  h_th1f[ifile][iplot]->Scale(1./norm);
 	}
 
       // Normalize histos to first histogram:
       if ( hist1d[iplot].normToFirst() ) {
 	//if (type[ifile] == "signal" ) {
-        cout << "normalize first" << endl;
         Double_t normFirst = h_th1f[filename.size()-1][iplot]->Integral();
         Double_t normLatter = h_th1f[ifile][iplot]->Integral();
 
@@ -507,6 +498,12 @@ bool multiplot() {
 	      hdev->SetBinError(i, 0.0);
 	    }
 	  }
+	  if (UseFakes) {
+	    if (ifile == filename.size()-1) {
+	      syserrorPos[i] += pow(h_th1f[ifile][iplot]->GetBinContent(i)*0.25,2);
+	      syserrorNeg[i] += pow(h_th1f[ifile][iplot]->GetBinContent(i)*0.25,2);
+	    }
+	  }
 	}
 	if (SYS_YES && (!hist1d[iplot].name().Contains("Muons/") || !hist1d[iplot].name().Contains("Electrons/") || !hist1d[iplot].name().Contains("Jets/")) ) {
 	  for (unsigned int s=0;s<nsystematics;s++) {//nsystematics
@@ -587,29 +584,34 @@ bool multiplot() {
 	  if ( type[ifile] == "signal") 
 	    for (Int_t i=1;i<=hdevMaj->GetNbinsX();i++) {
 	      ///Punzi
-	      /*
 		if (h_th1f[ifile][iplot]->Integral(i,hdevMaj->GetNbinsX())+htotal->Integral(i,hdevMaj->GetNbinsX()) > 0)
 		hdevMaj->SetBinContent(i,h_th1f[ifile][iplot]->Integral(i,hdevMaj->GetNbinsX())/(1+sqrt(htotal->Integral(i,hdevMaj->GetNbinsX())+pow(h_th1f[filename.size()-1][iplot]->Integral(i,hdevMaj->GetNbinsX())*0.25,2) ) ) );
 		hdevMaj->SetBinError(i,0);
 		if (h_th1f[ifile][iplot]->Integral(1,i)+htotal->Integral(1,i) > 0)
 		hdevMin->SetBinContent(i,h_th1f[ifile][iplot]->Integral(1,i)/(1+sqrt(htotal->Integral(1,i)+pow(h_th1f[filename.size()-1][iplot]->Integral(1,i)*0.25,2) ) ) );
-	      */
+		hdevMin->SetBinError(i,0);
+	      /*
 	      if (h_th1f[ifile][iplot]->Integral(i,hdevMaj->GetNbinsX())+htotal->Integral(i,hdevMaj->GetNbinsX()) > 0)
 		hdevMaj->SetBinContent(i,h_th1f[ifile][iplot]->Integral(i,hdevMaj->GetNbinsX())/sqrt(h_th1f[ifile][iplot]->Integral(i,hdevMaj->GetNbinsX())+htotal->Integral(i,hdevMaj->GetNbinsX()) ) );
 	      hdevMaj->SetBinError(i,0);
 	      if (h_th1f[ifile][iplot]->Integral(1,i)+htotal->Integral(1,i) > 0)
 		hdevMin->SetBinContent(i,h_th1f[ifile][iplot]->Integral(1,i)/sqrt(h_th1f[ifile][iplot]->Integral(1,i)+htotal->Integral(1,i) ) );
-	      
+	      */
 	    }
 	}
       hdevMaj->SetLineColor(kBlack);
-      hdevMaj->GetYaxis()->SetTitle( "#frac{S}{#sqrt{S+B}}" );
-      //hdevMaj->GetYaxis()->SetTitle( "#frac{eff(S)}{1+#sqrt{B+(.25B_{fake})^{2}}}" );
+      //hdevMaj->GetYaxis()->SetTitle( "#frac{S}{#sqrt{S+B}}" );
+      hdevMaj->GetYaxis()->SetTitle( "#frac{eff(S)}{1+#sqrt{B+(.25B_{fake})^{2}}}" );
       hdevMaj->GetYaxis()->SetTitleOffset(0.7);
       hdevMaj->GetYaxis()->SetTitleSize(0.10);
       hdevMaj->GetYaxis()->SetLabelSize(0.05);
-      hdevMaj->GetYaxis()->SetRangeUser(0., hdevMaj->GetBinContent(hdevMaj->GetMaximumBin())*1.2 );
+      if( hdevMaj->GetBinContent(hdevMaj->GetMaximumBin()) > hdevMin->GetBinContent(hdevMin->GetMaximumBin()) )
+	hdevMaj->GetYaxis()->SetRangeUser(0., hdevMaj->GetBinContent(hdevMaj->GetMaximumBin())*1.2 );
+      else
+	hdevMaj->GetYaxis()->SetRangeUser(0., hdevMin->GetBinContent(hdevMin->GetMaximumBin())*1.2 );
+      hdevMaj->SetFillColor(kYellow);
       hdevMin->SetLineColor(kBlue);
+      hdevMin->SetFillColor(0);
       hdevMin->SetLineWidth(2);
       hdevMaj->Draw("L");
       hdevMin->Draw("Lsame");
