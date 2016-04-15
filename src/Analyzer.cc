@@ -223,8 +223,8 @@ void Analyzer::Loop() {
     triggerOK = false;
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
-      //Int_t ps = vtrigps->at(t);
-      if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") ) {
+      Int_t ps = vtrigps->at(t);
+      if ( ps>0 && trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") ) {
         triggerOK = true;
         break;
       }
@@ -254,9 +254,9 @@ void Analyzer::Loop() {
     
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.15);
+    Muon.SetRelIso(0.10);
     Muon.SetChiNdof(10);
-    Muon.SetBSdxy(0.20);
+    Muon.SetBSdxy(0.05);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
@@ -270,9 +270,9 @@ void Analyzer::Loop() {
 
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.15,0.6);
+    Muon.SetRelIso(0.10,0.6);
     Muon.SetChiNdof(10,50);
-    Muon.SetBSdxy(0.20,0.20);
+    Muon.SetBSdxy(0.05,0.20);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
     
@@ -323,8 +323,8 @@ void Analyzer::Loop() {
         //if (muonColl[i].leptonType()=="Electron")
 	  //weight *= heIDSF->GetBinContent( hmueTriggerSF->FindBin( leptonSelect[i].lorentzVec().Eta(),fabs(leptonSelect[i].lorentzVec().Pt()) ) );
 	//if (muonColl[i].leptonType()=="Muon")
-	  weight *= hmuIDSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
-          weight *= hmuISOSF->GetBinContent( hmueTriggerSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
+	  weight *= hmuIDSF->GetBinContent( hmuIDSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
+          weight *= hmuISOSF->GetBinContent( hmuISOSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
       }
     }
     if(debug) cout<< "generic plots FILLED" <<endl;
@@ -518,7 +518,7 @@ void Analyzer::LoopFR() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( (trigger.Contains("HLT_Mu8_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
+      if ( ps>0 && (trigger.Contains("HLT_Mu8_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
         triggerOK = true;
         break;
       }
@@ -544,9 +544,9 @@ void Analyzer::LoopFR() {
     std::vector<Lepton> muonColl;
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.15);
+    Muon.SetRelIso(0.10);
     Muon.SetChiNdof(10);
-    Muon.SetBSdxy(0.20);
+    Muon.SetBSdxy(0.05);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
@@ -800,7 +800,7 @@ void Analyzer::LoopQFlip() {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
       //if ( trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") && ps>0) {
-      if ( trigger.Contains("HLT_IsoMu22_v") ) {
+      if ( ps>0 && trigger.Contains("HLT_IsoMu22_v") ) {
         triggerOK = true;
         break;
       }
