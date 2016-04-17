@@ -938,11 +938,7 @@ void Analyzer::LoopQFlip() {
 	index=jetColl[i].ijet();
 	h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
       }
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> 5dd5f3f55fed4ed2a876503fc08fd24c9bc7d775
       //Check pT = 48+/-10
       double pt0 = fabs(muonColl[0].lorentzVec().Pt()-48.);
       double pt1 = fabs(muonColl[1].lorentzVec().Pt()-48.);
@@ -955,15 +951,9 @@ void Analyzer::LoopQFlip() {
       else if ( pt1 <= 10. )
         tag = 1;
       probe = 1 - tag;
-<<<<<<< HEAD
     }
     bool ptRange = false;
-=======
 
-    }
->>>>>>> 5dd5f3f55fed4ed2a876503fc08fd24c9bc7d775
-
-    bool ptRange = false;
     if (tag != -1 && twoMu) ptRange = true;
     if (ptRange) {
       cut = TAG;
