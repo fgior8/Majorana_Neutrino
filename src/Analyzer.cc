@@ -224,7 +224,7 @@ void Analyzer::Loop() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( ps>0 && trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") ) {
+      if ( ps>=0 && trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") ) {
         triggerOK = true;
         break;
       }
@@ -254,9 +254,9 @@ void Analyzer::Loop() {
     
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.10);
+    Muon.SetRelIso(0.15);
     Muon.SetChiNdof(10);
-    Muon.SetBSdxy(0.05);
+    Muon.SetBSdxy(0.20);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
@@ -270,9 +270,9 @@ void Analyzer::Loop() {
 
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.10,0.6);
+    Muon.SetRelIso(0.15,0.6);
     Muon.SetChiNdof(10,50);
-    Muon.SetBSdxy(0.05,0.20);
+    Muon.SetBSdxy(0.20,0.20);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
     
@@ -281,7 +281,7 @@ void Analyzer::Loop() {
     Electron.SetRelIso(0.15);
     Electron.SetBSdxy(0.02);
     Electron.SetBSdz(0.10);
-    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_snu, *electrons_dxy, *electrons_dz, electronColl);
+    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_tight, *electrons_dxy, *electrons_dz, electronColl);
     
     Jets.SetPt(20);
     Jets.SetEta(2.4);
@@ -323,8 +323,14 @@ void Analyzer::Loop() {
         //if (muonColl[i].leptonType()=="Electron")
 	  //weight *= heIDSF->GetBinContent( hmueTriggerSF->FindBin( leptonSelect[i].lorentzVec().Eta(),fabs(leptonSelect[i].lorentzVec().Pt()) ) );
 	//if (muonColl[i].leptonType()=="Muon")
-	  weight *= hmuIDSF->GetBinContent( hmuIDSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
-          weight *= hmuISOSF->GetBinContent( hmuISOSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(muonColl[i].lorentzVec().Pt()) ) );
+	if (muonColl[i].lorentzVec().Pt()<=20) 
+	  temp_pt = 21.;
+        else if (muonColl[i].lorentzVec().Pt()>=120)
+          temp_pt = 119.;
+        else 
+	  temp_pt = muonColl[i].lorentzVec().Pt();
+	weight *= hmuIDSF->GetBinContent( hmuIDSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(temp_pt) ) );
+        weight *= hmuISOSF->GetBinContent( hmuISOSF->FindBin( fabs(muonColl[i].lorentzVec().Eta()),fabs(temp_pt) ) );
       }
     }
     if(debug) cout<< "generic plots FILLED" <<endl;
@@ -518,7 +524,7 @@ void Analyzer::LoopFR() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( ps>0 && (trigger.Contains("HLT_Mu8_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
+      if ( ps>0 && (trigger.Contains("HLT_Mu17_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
         triggerOK = true;
         break;
       }
@@ -542,7 +548,7 @@ void Analyzer::LoopFR() {
     if(debug) cout<< "object selection" <<endl;
     
     std::vector<Lepton> muonColl;
-    Muon.SetPt(15);
+    Muon.SetPt(10);
     Muon.SetEta(2.4);
     Muon.SetRelIso(0.10);
     Muon.SetChiNdof(10);
@@ -551,7 +557,7 @@ void Analyzer::LoopFR() {
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
     std::vector<Lepton> muonLooseColl;
-    Muon.SetPt(15);
+    Muon.SetPt(10);
     Muon.SetEta(2.4);
     Muon.SetRelIso(0.6);
     Muon.SetChiNdof(50);
@@ -560,12 +566,12 @@ void Analyzer::LoopFR() {
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseColl);
     
     std::vector<Lepton> electronColl;
-    Electron.SetPt(15);
+    Electron.SetPt(10);
     Electron.SetEta(2.5);
     Electron.SetRelIso(0.15);
     Electron.SetBSdxy(0.02);
     Electron.SetBSdz(0.10);
-    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_snu, *electrons_dxy, *electrons_dz, electronColl);
+    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_medium, *electrons_dxy, *electrons_dz, electronColl);
     
     std::vector<Jet> jetColl;
     Jets.SetPt(40);
@@ -831,7 +837,7 @@ void Analyzer::LoopQFlip() {
     Electron.SetRelIso(0.15);
     Electron.SetBSdxy(0.02);
     Electron.SetBSdz(0.10);
-    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_snu, *electrons_dxy, *electrons_dz, electronColl);
+    Electron.ElectronSelection(*electrons_scEta, *electrons_pt, *electrons_eta, *electrons_phi, *electrons_energy, *electrons_phIso03, *electrons_nhIso03, *electrons_chIso03, *electrons_puChIso03, *electrons_q, *electrons_passConversionVeto, *electrons_electronID_tight, *electrons_dxy, *electrons_dz, electronColl);
     
     Jets.SetPt(30);
     Jets.SetEta(2.4);
