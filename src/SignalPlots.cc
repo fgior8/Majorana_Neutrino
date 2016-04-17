@@ -3,6 +3,7 @@
 SignalPlots::SignalPlots(TString name) {
   h_jjmass =         new TH1F("h_dijetsmass_"    + name,"Invariant mass of the two leading jets",200,0,2000);
   h_llmass =         new TH1F("h_llmass_"        + name,"Invariant mass of the two leading muons",100,0,1000);
+  h_llpt   =         new TH1F("h_llpt_"          + name,"p_{T} of the reconstructed Z",100,0,1000);
   h_l1jjmass =       new TH1F("h_l1jjmass_"      + name,"Invariant mass of the leading muon plus jets",200,0,2000);
   h_l2jjmass =       new TH1F("h_l2jjmass_"      + name,"Invariant mass of the trailing muon plus jets",200,0,2000);
   h_lljjmass =       new TH1F("h_lljjmass_"      + name,"Invariant mass of the four particles",400,0,4000);
@@ -21,6 +22,7 @@ SignalPlots::SignalPlots(TString name) {
 SignalPlots::~SignalPlots() {
   delete h_jjmass;
   delete h_llmass;
+  delete h_llpt;
   delete h_l2jjmass;
   delete h_l1jjmass;
   delete h_lljjmass;
@@ -43,7 +45,7 @@ void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, st
   h_MET->Fill(MET, weight);
   h_MET_phi->Fill(MET_phi, weight);
   h_llmass->Fill( (leptons[i].lorentzVec()+leptons[j].lorentzVec()).M(),weight);
-  
+  h_llpt->Fill( (leptons[i].lorentzVec()+leptons[j].lorentzVec()).Pt(),weight); 
   h_MT2ll->Fill(getMT2(leptons[i].lorentzVec(), leptons[j].lorentzVec(), MET, MET_phi), weight);
 
   if (cut>1 && cut!=3 && cut!=4) {
@@ -66,6 +68,7 @@ void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, st
 void SignalPlots::Write() {
   h_jjmass->Write();
   h_llmass->Write();
+  h_llpt->Write();
   h_l1jjmass->Write();
   h_l2jjmass->Write();
   h_lljjmass->Write();

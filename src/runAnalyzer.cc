@@ -78,13 +78,13 @@ int main (int argc, const char* argv[]) {
   cout << "Running on " << fdir << endl;
   TChain* chain = ChainMaker(fdir);
   Pippo.Init(chain); 
-  Pippo.SetName("./histoFR/"+hname,ver);
+  Pippo.SetName("./histo/"+hname,ver);
   Pippo.SetEvtN(nev);
   Pippo.SetWeight(hname);
   cout << "Saved in " << hname << endl;  
-  Pippo.LoopFR();
+  //Pippo.LoopFR();
   //Pippo.LoopQFlip();
-  //Pippo.Loop();
+  Pippo.Loop();
 
 cout << endl << endl;
 }

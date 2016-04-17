@@ -56,6 +56,7 @@ class Analyzer : public Data {
   Int_t cut, channel, index;
   Bool_t *goodVerticies;
   Double_t HT, MET, MET_phi;
+  Double_t temp_pt;
   UInt_t numberVertices, VertexN;
   Bool_t Zveto, triggerOK;
   TString trigger;
