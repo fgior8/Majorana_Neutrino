@@ -731,6 +731,8 @@ void Analyzer::LoopQFlip() {
   h_muons = new MuonPlots**[ncuts];
   h_jets = new JetPlots**[ncuts];
   TH1F *h_craft_SS, *h_craft_OS, *h_mass_pred_SS;
+  int tag = -1;
+  int probe = -1;
 
   for (UInt_t i=0;i<ncuts;i++) {
     h_invPt[i] = new TH1F*[nchannels];
@@ -936,23 +938,21 @@ void Analyzer::LoopQFlip() {
 	index=jetColl[i].ijet();
 	h_jets[cut][channel]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
       }
+      
+      //Check pT = 48+/-10
+      double pt0 = fabs(muonColl[0].lorentzVec().Pt()-48.);
+      double pt1 = fabs(muonColl[1].lorentzVec().Pt()-48.);
+      if ( pt0 <= 10. && pt1 <= 10.) {
+        if(pt0 > pt1) tag = 1;
+        if(pt0 < pt1) tag = 0;
+      }
+      else if ( pt0 <= 10. )
+        tag = 0;
+      else if ( pt1 <= 10. )
+        tag = 1;
+      probe = 1 - tag;
     }
-
-    //Check pT = 48+/-10
     bool ptRange = false;
-    int tag = -1;
-    int probe = -1;
-    double pt0 = fabs(muonColl[0].lorentzVec().Pt()-48.);
-    double pt1 = fabs(muonColl[1].lorentzVec().Pt()-48.);
-    if ( pt0 <= 10. && pt1 <= 10.) {
-      if(pt0 > pt1) tag = 1;
-      if(pt0 < pt1) tag = 0;
-    }
-    else if ( pt0 <= 10. )
-      tag = 0;
-    else if ( pt1 <= 10. )
-      tag = 1;
-    probe = 1 - tag;
 
     if (tag != -1 && twoMu) ptRange = true;
     if (ptRange) {
