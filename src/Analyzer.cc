@@ -873,7 +873,7 @@ void Analyzer::LoopQFlip() {
             if(std::find(genMatch.begin(), genMatch.end(), j) != genMatch.end()) continue;
             dRtmp = muonColl[i].lorentzVec().DeltaR(genColl[j].lorentzVec());
             // Find match with smallest DeltaR (always < 0.3)
-            if(dRtmp < 0.3 && dRtmp < deltaR) {
+            if(dRtmp < 0.1 && dRtmp < deltaR) {
               match = true;
               deltaR = dRtmp;
               gen = j; // Index of best match
