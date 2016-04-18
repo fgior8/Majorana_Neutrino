@@ -4,10 +4,10 @@ objects = $(patsubst %.c,%.o,$(wildcard *.c))
 
 #standard dir
 INCLUDEDIR       = ../include/
-INCLUDEDIRCOMMON = ../
+INCLUDEDIRCOMMON = ./
 #INCLUDEDIRTMVA   = ./TMVA/include
 SRCDIR           = ../src/
-TESTCDIR         = ../test/
+TESTCDIR         = ./test/
 OUTLIB	         = ../lib/
 
 ROOTCFLAGS    := $(shell $(ROOTSYS)/bin/root-config --cflags)

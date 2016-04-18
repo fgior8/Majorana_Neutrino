@@ -6,7 +6,7 @@ ElectronSel::ElectronSel() {};
 ElectronSel::~ElectronSel() {};
 
 
-void ElectronSel::ElectronSelection(std::vector<Double_t> scEta, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> PhotonIso, std::vector<Double_t> NeutralIso, std::vector<Double_t> ChargeIso, std::vector<Double_t> PUpt, std::vector<Int_t> Charge, std::vector<Bool_t> passConversionVeto, std::vector<Int_t> snuID, std::vector<Double_t> Dxy, std::vector<Double_t> Dz, std::vector<Lepton>& leptonColl) {
+void ElectronSel::ElectronSelection(std::vector<Double_t> scEta, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> PhotonIso, std::vector<Double_t> NeutralIso, std::vector<Double_t> ChargeIso, std::vector<Double_t> PUpt, std::vector<Int_t> Charge, std::vector<Bool_t> passConversionVeto, std::vector<Bool_t> snuID, std::vector<Double_t> Dxy, std::vector<Double_t> Dz, std::vector<Lepton>& leptonColl) {
    
   for (UInt_t ilep=0; ilep<Pt.size(); ilep++) {
     LeptonchiNdof = -99.;
