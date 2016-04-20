@@ -7,7 +7,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   const double luminosity = 1.0;
   //  const double luminosity = 0.004;
-  TString ver = "9";
+  TString ver = "10";
 
   const TString directory = "/uscms/home/byates/CMSSW_7_6_4/src/Majorana_Neutrino/test/histo/";
   std::vector<TString> classe;
@@ -196,8 +196,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
   }
   
   if (signal && W_jets) {
-    //filename.push_back(directory+"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_"+ver+".root");
-    filename.push_back(directory+"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_10.root");
+    filename.push_back(directory+"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_"+ver+".root");
     //filename.push_back(directory+"WJets_Madgraph_14.root");
     legendname.push_back("Wjets");
     plotlabel.push_back("Wjets");
@@ -221,7 +220,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   if (signal && data) {
     //filename.push_back(directory+"SingleMuon_"+ver+".root");
-    filename.push_back(directory+"SingleMuon_9.root");
+    filename.push_back(directory+"SingleMuon_10.root");
     legendname.push_back("Data");
     plotlabel.push_back("Data");
     color.push_back(kBlack); linecol.push_back(kBlack);

@@ -864,6 +864,14 @@ void Analyzer::LoopQFlip() {
       //Gen.GenSelection(*GenParticleEta, *GenParticlePt, *GenParticlePx, *GenParticlePy, *GenParticlePz, *GenParticleEnergy, *GenParticleVX, *GenParticleVY, *GenParticleVZ, VertexX->at(VertexN), VertexY->at(VertexN), VertexZ->at(VertexN), *GenParticlePdgId, *GenParticleStatus, *GenParticleNumDaught, *GenParticleMotherIndex, genColl);
       Gen.GenParticleSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, Mass_Mu, genColl);
 
+
+/*
+      for(int igen = 1; igen < gen_motherindex->size(); igen++) {
+        if(gen_motherindex->at(igen) < 0) continue;
+        int id = gen_pdgid->at(gen_motherindex->at(igen));
+        if(fabs(id) == 23) cout << id << endl;
+      }
+*/
       std::vector<Lepton> muonGenColl;
       std::vector<Lepton> muonRejColl;
       if(GenMatch) {
@@ -889,12 +897,15 @@ void Analyzer::LoopQFlip() {
           if(match) {
             muonGenColl.push_back(muonColl[i]);
             genMatch.push_back(gen);
+/*
             cout << "PDGID, charge, pT, phi, eta, status, mother" << endl;
             cout << "Muon: " << endl;
             cout << " P " << muonColl[i].charge() << " " << muonColl[i].lorentzVec().Pt() << " " << muonColl[i].lorentzVec().Phi() << " " << muonColl[i].eta() << endl;
 
             cout << "Gen:" << gen << endl;
             int num = 0;
+*/
+/*
             for(int igen = 0; igen < gen_pt->size(); igen++) {
               if(! (fabs(gen_pdgid->at(igen))==13 || fabs(gen_pdgid->at(igen))==15)) continue;
               if(fabs(gen_pdgid->at(igen)) == 2212) continue;
@@ -902,6 +913,15 @@ void Analyzer::LoopQFlip() {
               cout << gen_pdgid->at(igen) << " " << num << " " << gen_pt->at(igen) << " " << gen_phi->at(igen) << " " << gen_eta->at(igen) << " " << gen_status->at(igen) << " " <<  gen_pdgid->at(gen_motherindex->at(igen)) << endl << endl;
               num++;
             }
+*/
+/*
+            for(int igen = 0; igen < genColl.size(); igen++) {
+              int index = genColl[igen].ilepton();
+              if(! (fabs(gen_pdgid->at(index))==13 || fabs(gen_pdgid->at(index))==15)) continue;
+              cout << gen_pdgid->at(index) << " " << num << " " << gen_pt->at(index) << " " << gen_phi->at(index) << " " << gen_eta->at(index) << " " << gen_status->at(index) << " " <<  gen_pdgid->at(gen_motherindex->at(index)) << endl << endl;
+              num++;
+            }
+*/
           }
           else muonRejColl.push_back(muonColl[i]);
           match = false;
