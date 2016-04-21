@@ -973,6 +973,8 @@ void Analyzer::LoopQFlip() {
       }
 
       //Check pT = 48+/-10
+      tag = -1;
+      probe = -1;
       double pt0 = fabs(muonColl[0].lorentzVec().Pt()-48.);
       double pt1 = fabs(muonColl[1].lorentzVec().Pt()-48.);
       if ( pt0 <= 10. && pt1 <= 10.) {
