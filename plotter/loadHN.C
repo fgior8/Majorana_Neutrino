@@ -7,7 +7,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   const double luminosity = 1.0;
   //  const double luminosity = 0.004;
-  TString ver = "10";
+  TString ver = "12";
 
   const TString directory = "/uscms/home/byates/CMSSW_7_6_4/src/Majorana_Neutrino/test/histo/";
   std::vector<TString> classe;
@@ -33,7 +33,6 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
       for(UInt_t j=0; j < sizeof(channel)/sizeof(TString); j++) {
         cout << "starting plots" << endl;
         cout << cut[i] + " " + channel[j] << endl;
-/*
   	hist1d.push_back( SinglePlot("Muons/h_N_muons_"+cut[i]+"_"+channel[j], 1,  log, nonorm, nonormToFirst, 10.0, nooverflow, stack, "N","","") );
   	hist1d.push_back( SinglePlot("Muons/h_charge_muons_"+cut[i]+"_"+channel[j], 1,  log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Charge","muon charge","") );
 	hist1d.push_back( SinglePlot("Muons/h_pt_muons_"+cut[i]+"_"+channel[j], 1,  log, nonorm, nonormToFirst, 300.0, nooverflow, stack, "Pt","muon p_{T} (GeV)","Events/10 GeV") );
@@ -44,7 +43,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 	hist1d.push_back( SinglePlot("Muons/h_PF_RelIso_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, 1.0, nooverflow, stack, "","","muon relIso") );
 	hist1d.push_back( SinglePlot("Muons/h_dxy_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, .5, nooverflow, stack, "","","muon d_{xy}") );
 	hist1d.push_back( SinglePlot("Muons/h_dz_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, .5, nooverflow, stack, "","","muon d_{z}") );
-*/
+/*
         hist1d.push_back( SinglePlot("Muons/h_charge_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "charge","charge","") );
         hist1d.push_back( SinglePlot("Muons/h_mass_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "m(ll)","m(ll) (GeV)","") );
         hist1d.push_back( SinglePlot("Muons/h_MET_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "MET","#slash{E}_{T} (GeV)","") );
@@ -52,6 +51,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
         hist1d.push_back( SinglePlot("Muons/h_probePt_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Probe P_{T}","P_{T} (GeV)","") );
         hist1d.push_back( SinglePlot("Muons/h_tagPt_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Tag P_{T}","P_{T} (GeV)","") );
         hist1d.push_back( SinglePlot("Muons/h_invPt_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "1/P_{T}","1/P_{T} (1/Gev)","") );
+*/
       }
   }
   

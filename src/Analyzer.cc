@@ -876,6 +876,8 @@ void Analyzer::LoopQFlip() {
       std::vector<Lepton> muonRejColl;
       if(GenMatch) {
         bool match = false;
+        bool prompt = false;
+        bool fromTau = false;
         double dRtmp = 1;
         double deltaR = 1;
         std::vector<UInt_t> genMatch;
@@ -886,8 +888,21 @@ void Analyzer::LoopQFlip() {
             // Skip already matched gen particles
             if(std::find(genMatch.begin(), genMatch.end(), j) != genMatch.end()) continue;
             dRtmp = muonColl[i].lorentzVec().DeltaR(genColl[j].lorentzVec());
+            int index = genColl[j].ilepton();
+            int mother = gen_motherindex->at(index);
+            if(mother < 0) prompt = true;
+            else if (dRtmp < 0.1) {
+              while(mother > 0 && fabs(gen_pdgid->at(mother))==13) {
+                index = mother;
+                mother = gen_motherindex->at(index);
+                if(mother < 0) { prompt = true; break; }
+                if(fabs(gen_pdgid->at(mother)) == 15 && gen_status->at(mother) == 2) fromTau = true;
+                if(gen_pdgid->at(mother) > 50 && gen_status->at(mother) == 2) prompt = false;
+                else prompt = true;
+              }
+            }
             // Find match with smallest DeltaR (always < 0.3)
-            if(dRtmp < 0.1 && dRtmp < deltaR) {
+            if(dRtmp < 0.1 && dRtmp < deltaR && prompt && !fromTau) {
               match = true;
               deltaR = dRtmp;
               gen = j; // Index of best match
@@ -903,9 +918,11 @@ void Analyzer::LoopQFlip() {
             cout << " P " << muonColl[i].charge() << " " << muonColl[i].lorentzVec().Pt() << " " << muonColl[i].lorentzVec().Phi() << " " << muonColl[i].eta() << endl;
 
             cout << "Gen:" << gen << endl;
-            int num = 0;
+            int igen = genColl[gen].ilepton();
+            cout << gen_pdgid->at(igen) << " " << gen_pt->at(igen) << " " << gen_phi->at(igen) << " " << gen_eta->at(igen) << " " << gen_status->at(igen) << " " <<  gen_pdgid->at(gen_motherindex->at(igen)) << endl << endl;
 */
 /*
+            int num = 0;
             for(int igen = 0; igen < gen_pt->size(); igen++) {
               if(! (fabs(gen_pdgid->at(igen))==13 || fabs(gen_pdgid->at(igen))==15)) continue;
               if(fabs(gen_pdgid->at(igen)) == 2212) continue;
@@ -934,6 +951,7 @@ void Analyzer::LoopQFlip() {
           cout << "Not all particles accounted for!" << endl;
           return;
         }
+
         muonColl.clear();
         muonColl = muonGenColl;
 
