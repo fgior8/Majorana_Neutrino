@@ -892,7 +892,7 @@ void Analyzer::LoopQFlip() {
             int mother = gen_motherindex->at(index);
             if(mother < 0) prompt = true;
             else if (dRtmp < 0.1) {
-              while(mother > 0 && fabs(gen_pdgid->at(mother))==13) {
+              while(mother > 0 && fabs(gen_pdgid->at(index))==13) {
                 index = mother;
                 mother = gen_motherindex->at(index);
                 if(mother < 0) { prompt = true; break; }
