@@ -7,7 +7,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   const double luminosity = 1.0;
   //  const double luminosity = 0.004;
-  TString ver = "8";
+  TString ver = "12";
 
   const TString directory = "/uscms/home/byates/CMSSW_7_6_4/src/Majorana_Neutrino/test/histo/";
   std::vector<TString> classe;
@@ -18,8 +18,8 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
   enum overflowbool { nooverflow,    overflow };
 
   Bool_t ttbar=true; Bool_t ZDY_jets=false; Bool_t W_jets=true; Bool_t QCD=false;
-  Bool_t DY=true; Bool_t tW = false; Bool_t ttW=false; Bool_t ttZ=false;
-  Bool_t WW=true; Bool_t WZ=true; Bool_t ZZ=true;  Bool_t WpWp=false; 
+  Bool_t DY=true; Bool_t tW = false; Bool_t ttW=true; Bool_t ttZ=true;
+  Bool_t WW=true; Bool_t WZ=true; Bool_t ZZ=true;  Bool_t WpWp=true; 
   Bool_t data=true;
   Bool_t signal=true;
   Bool_t FR=false;
@@ -33,16 +33,17 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
       for(UInt_t j=0; j < sizeof(channel)/sizeof(TString); j++) {
         cout << "starting plots" << endl;
         cout << cut[i] + " " + channel[j] << endl;
-  	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_N", 1,  log, nonorm, nonormToFirst, 10.0, nooverflow, stack, "N","","") );
-  	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_charge", 1,  log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Charge","muon charge","") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_pt", 1,  log, nonorm, nonormToFirst, 300.0, nooverflow, stack, "Pt","muon p_{T} (GeV)","Events/10 GeV") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_eta", 1,  nolog, nonorm, nonormToFirst, 5.0, nooverflow, stack, "eta","muon #eta","Events") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_phi", 1,  nolog, nonorm, nonormToFirst, 3.15, nooverflow, stack, "","","muon #phi") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_charge", 1,  nolog, nonorm, nonormToFirst, 2.0, nooverflow, stack, "","","muon charge") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_GlbChi2", 1,  nolog, nonorm, nonormToFirst, 50.0, nooverflow, stack, "","","muon global #Chi^{2}") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_PF_RelIso", 1,  nolog, nonorm, nonormToFirst, 1.0, nooverflow, stack, "","","muon relIso") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_dxy", 1,  nolog, nonorm, nonormToFirst, .5, nooverflow, stack, "","","muon d_{xy}") );
-	hist1d.push_back( SinglePlot("Muons/h_muons_"+cut[i]+"_"+channel[j]+"_dz", 1,  nolog, nonorm, nonormToFirst, .5, nooverflow, stack, "","","muon d_{z}") );
+  	hist1d.push_back( SinglePlot("Muons/h_N_muons_"+cut[i]+"_"+channel[j], 1,  log, nonorm, nonormToFirst, 10.0, nooverflow, stack, "N","","") );
+  	hist1d.push_back( SinglePlot("Muons/h_charge_muons_"+cut[i]+"_"+channel[j], 1,  log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Charge","muon charge","") );
+	hist1d.push_back( SinglePlot("Muons/h_pt_muons_"+cut[i]+"_"+channel[j], 1,  log, nonorm, nonormToFirst, 300.0, nooverflow, stack, "Pt","muon p_{T} (GeV)","Events/10 GeV") );
+	hist1d.push_back( SinglePlot("Muons/h_eta_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, 5.0, nooverflow, stack, "eta","muon #eta","Events") );
+	hist1d.push_back( SinglePlot("Muons/h_phi_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, 3.15, nooverflow, stack, "","","muon #phi") );
+	hist1d.push_back( SinglePlot("Muons/h_charge_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, 2.0, nooverflow, stack, "","","muon charge") );
+	hist1d.push_back( SinglePlot("Muons/h_GlbChi2_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, 50.0, nooverflow, stack, "","","muon global #Chi^{2}") );
+	hist1d.push_back( SinglePlot("Muons/h_PF_RelIso_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, 1.0, nooverflow, stack, "","","muon relIso") );
+	hist1d.push_back( SinglePlot("Muons/h_dxy_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, .5, nooverflow, stack, "","","muon d_{xy}") );
+	hist1d.push_back( SinglePlot("Muons/h_dz_muons_"+cut[i]+"_"+channel[j], 1,  nolog, nonorm, nonormToFirst, .5, nooverflow, stack, "","","muon d_{z}") );
+/*
         hist1d.push_back( SinglePlot("Muons/h_charge_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "charge","charge","") );
         hist1d.push_back( SinglePlot("Muons/h_mass_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "m(ll)","m(ll) (GeV)","") );
         hist1d.push_back( SinglePlot("Muons/h_MET_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "MET","#slash{E}_{T} (GeV)","") );
@@ -50,12 +51,14 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
         hist1d.push_back( SinglePlot("Muons/h_probePt_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Probe P_{T}","P_{T} (GeV)","") );
         hist1d.push_back( SinglePlot("Muons/h_tagPt_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "Tag P_{T}","P_{T} (GeV)","") );
         hist1d.push_back( SinglePlot("Muons/h_invPt_"+cut[i]+"_"+channel[j], 1, log, nonorm, nonormToFirst, 1.0, nooverflow, stack, "1/P_{T}","1/P_{T} (1/Gev)","") );
+*/
       }
   }
   
   
   if (signal && ttZ) {
-    filename.push_back(directory+"TTZ_"+ver+".root");
+    //filename.push_back(directory+"TTZ_"+ver+".root");
+    filename.push_back(directory+"TTZToQQ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_"+ver+".root");
     legendname.push_back("t#bar{t}Z");
     plotlabel.push_back("t#bar{t}Z");
     color.push_back(kOrange); linecol.push_back(kBlack);
@@ -66,9 +69,9 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
   }
   
   if (signal && ttW) {
-    filename.push_back(directory+"TTWJets_"+ver+".root");
-    legendname.push_back("t#bar{t}W");
-    plotlabel.push_back("t#bar{t}W");
+    //filename.push_back(directory+"TTWJets_"+ver+".root");
+    filename.push_back(directory+"TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_"+ver+".root");
+    legendname.push_back("t#bar{t}W"); plotlabel.push_back("t#bar{t}W");
     color.push_back(kOrange+7); linecol.push_back(kBlack);
     legend.push_back(true);
     type.push_back("mc");
@@ -122,7 +125,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
     weight.push_back(luminosity);
   }
 
-  if (signal && DY && 0) {
+  if (signal && DY) {
     filename.push_back(directory+"DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_"+ver+".root");
     //filename.push_back(directory+"WWTo2L2Nu_Powheg_14.root");
     legendname.push_back("DY_10-50");
@@ -197,7 +200,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
     //filename.push_back(directory+"WJets_Madgraph_14.root");
     legendname.push_back("Wjets");
     plotlabel.push_back("Wjets");
-    color.push_back(kGreen); linecol.push_back(kBlack);
+    color.push_back(kBlue-3); linecol.push_back(kBlack);
     legend.push_back(true);
     type.push_back("mc");
     //weight.push_back(6.141944936);
@@ -217,7 +220,7 @@ void loadCFO(std::vector<TString>& filename, std::vector<TString>& legendname, s
 
   if (signal && data) {
     //filename.push_back(directory+"SingleMuon_"+ver+".root");
-    filename.push_back(directory+"SingleMuon_6.root");
+    filename.push_back(directory+"SingleMuon_10.root");
     legendname.push_back("Data");
     plotlabel.push_back("Data");
     color.push_back(kBlack); linecol.push_back(kBlack);

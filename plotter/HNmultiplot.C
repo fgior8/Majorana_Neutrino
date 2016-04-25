@@ -79,8 +79,9 @@ bool multiplot() {
 	  }
 	  h_th1f[ifile][iplot] = (TH1F*)temp->Clone();
 	}
-	else if (hist1d[iplot].name().Contains("muons") ) {
-	  TH1F* temp = (TH1F*)file[ifile]->Get( "Muons/"+hist1d[iplot].name() );
+	else if (hist1d[iplot].name().Contains("muons") || type[ifile] == "mc" ) {
+	  //TH1F* temp = (TH1F*)file[ifile]->Get( "Muons/"+hist1d[iplot].name() );
+	  TH1F* temp = (TH1F*)file[ifile]->Get( hist1d[iplot].name() );
 	  if (!temp) {
 	    cout << "\n1D plot " << "Muons/" << hist1d[iplot].name() << " in " << filename[ifile].Data()<< " invalid!"<<endl;
 	    return 1;

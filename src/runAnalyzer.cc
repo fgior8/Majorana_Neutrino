@@ -14,7 +14,7 @@ int main (int argc, const char* argv[]) {
 
   const char * _output   = 0;
   const char * _input    = 0;
-  const char * _dir      = "./DataSetList/";
+  const char * _dir      = "../DataSetList/";
   const char * _version  = 0;
   const char * _nevents  = 0;
   
@@ -83,8 +83,8 @@ int main (int argc, const char* argv[]) {
   Pippo.SetWeight(hname);
   cout << "Saved in " << hname << endl;  
   //Pippo.LoopFR();
-  //Pippo.LoopQFlip();
-  Pippo.Loop();
+  Pippo.LoopQFlip();
+  //Pippo.Loop();
 
 cout << endl << endl;
 }

@@ -14,7 +14,7 @@ void GenSelection::GenLepSelection(std::vector<float> Eta, std::vector<float> Ph
     eta = Eta[ipart];
     if (Pt[ipart] >= pt_cut_min && Pt[ipart] < pt_cut_max && fabs(Eta[ipart]) < eta_cut) { 
       vPart.SetPtEtaPhiE(Pt[ipart], Eta[ipart], Phi[ipart], Energy[ipart]);
-      if (fabs(PdgId[ipart])==13) {
+      if ((fabs(PdgId[ipart])==13 || fabs(PdgId[ipart])==15) && Status[ipart]==1) {
 	leptonType = Lepton::Muon;
         double ID = PdgId[ipart];
 	leptonColl.push_back( Lepton(leptonType, ipart, vPart, eta, btag, btag, btag, charge, fakeType, looseTight, ID ) );
