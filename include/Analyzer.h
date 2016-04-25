@@ -34,7 +34,6 @@ class Analyzer : public Data {
   const Bool_t GenMatch = true;
   const Double_t Mass_Z = 91.1876;
   const Double_t Mass_W = 80.398;
-  const Double_t Mass_Mu = 0.105658; // GeV
 
   //SF parametrization
   TFile *MuSF_trig, *ElSF_trig, *MuElSF_trig;
@@ -85,6 +84,7 @@ class Analyzer : public Data {
   std::vector<Lepton> muonSelected;
   std::vector<Lepton> electronColl;
   std::vector<Lepton> genColl;
+  std::vector<Lepton> muonCollMatch;
 
   static const Int_t nintpT=9;
   Double_t *arraypT;

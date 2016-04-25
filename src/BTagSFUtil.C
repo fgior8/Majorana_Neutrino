@@ -2,7 +2,7 @@
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagCalibration
 #include "BTagSFUtil.h"
 #include "BTagCalibrationStandalone.cc"
-#include "BTagEfficienciesTTbarSummer12.C" // Change this to your sample efficiency
+#include "BTagEfficienciesTTbarSummer15.C" // Change this to your sample efficiency
 #include "FastSimCorrectionFactorsSummer12.C" // Change this to your sample efficiency
 
 BTagSFUtil::BTagSFUtil(string MeasurementType, string BTagAlgorithm, TString OperatingPoint, int SystematicIndex, TString FastSimDataset, int Seed) {

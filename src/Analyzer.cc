@@ -119,7 +119,7 @@ void Analyzer::SetEvtN(Long64_t events) {
 
 void Analyzer::Loop() {
   TH2F *FRhisto;
-  TFile *infile = new TFile("/uscms/home/fgior8/commons/ScaleFactors/Total_FRcorr40_2.root");
+  TFile *infile = new TFile("/uscms/home/fgior8/commons/ScaleFactors/Total_FRcorr40_4.root");
   infile->cd();
   TDirectory *dir=gDirectory;
   dir->GetObject("h_FOrate3",FRhisto);
@@ -224,7 +224,7 @@ void Analyzer::Loop() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( ps>=0 && trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") ) {
+      if ( ps>0 && trigger.Contains("Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") ) {
         triggerOK = true;
         break;
       }
@@ -254,9 +254,9 @@ void Analyzer::Loop() {
     
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.15);
+    Muon.SetRelIso(0.10);
     Muon.SetChiNdof(10);
-    Muon.SetBSdxy(0.20);
+    Muon.SetBSdxy(0.05);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonColl);
 
@@ -270,9 +270,9 @@ void Analyzer::Loop() {
 
     Muon.SetPt(15);
     Muon.SetEta(2.4);
-    Muon.SetRelIso(0.15,0.6);
+    Muon.SetRelIso(0.10,0.6);
     Muon.SetChiNdof(10,50);
-    Muon.SetBSdxy(0.20,0.20);
+    Muon.SetBSdxy(0.05,0.20);
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
     
@@ -286,7 +286,38 @@ void Analyzer::Loop() {
     Jets.SetPt(20);
     Jets.SetEta(2.4);
     Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
+/*
+    genColl.clear();
 
+    Gen.SetPt(10);
+    Gen.SetEta(3.0);
+    Gen.GenLepSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, genColl);
+
+    muonCollMatch.clear(); 
+    if (muonColl.size()<1 || genColl.size()<1) continue;
+    for (UInt_t ilep=0;ilep<muonColl.size();ilep++) {
+       for (UInt_t igen=0;igen<genColl.size();igen++) {
+         if (muonColl[ilep].lorentzVec().DeltaR( genColl[igen].lorentzVec() ) < 0.10 ) {
+           cout << " event " << event << endl << " ilep " << ilep << " charge " << muonColl[ilep].charge() << endl;
+           cout << " igen " << igen << " gen_status " << gen_status->at(genColl[igen].ilepton()) << " id " << genColl[igen].relIso() << " index " << genColl[igen].ilepton() << endl;
+           cout << " mother " << gen_pdgid->at(gen_motherindex->at(genColl[igen].ilepton())) << " grand mother " << gen_pdgid->at(gen_motherindex->at(gen_motherindex->at(genColl[igen].ilepton()))) << " grand grand mother " << gen_motherindex->at(gen_motherindex->at(gen_motherindex->at(genColl[igen].ilepton()))) << endl;
+           muonCollMatch.push_back(muonColl[ilep]);
+           break;
+         }
+       }
+    }
+    if (jentry==441165) {
+      
+
+
+    }
+
+    if (muonCollMatch.size()==2)
+      if (muonCollMatch[0].charge() == muonCollMatch[1].charge()) {
+        cout << "jentry " << jentry << " gen_pdgid " << muonCollMatch[0].ilepton() << " and " << muonCollMatch[1].ilepton() << endl;
+        cout << " " << endl;
+      }
+*/
     if(debug) cout<< "DONE object selection" <<endl;
 
     if(muonColl.size()>0)
@@ -524,7 +555,7 @@ void Analyzer::LoopFR() {
     for(UInt_t t=0; t<vtrignames->size(); t++) {
       trigger = vtrignames->at(t);
       Int_t ps = vtrigps->at(t);
-      if ( ps>0 && (trigger.Contains("HLT_Mu17_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
+      if ( ps>0 && (trigger.Contains("HLT_Mu8_TrkIsoVVL_v") || trigger.Contains("HLT_Mu17_TrkIsoVVL_v")) ) {
         triggerOK = true;
         break;
       }
@@ -862,7 +893,7 @@ void Analyzer::LoopQFlip() {
       Gen.SetEta(3.0);
       Gen.SetBSdxy(0.20);
       //Gen.GenSelection(*GenParticleEta, *GenParticlePt, *GenParticlePx, *GenParticlePy, *GenParticlePz, *GenParticleEnergy, *GenParticleVX, *GenParticleVY, *GenParticleVZ, VertexX->at(VertexN), VertexY->at(VertexN), VertexZ->at(VertexN), *GenParticlePdgId, *GenParticleStatus, *GenParticleNumDaught, *GenParticleMotherIndex, genColl);
-      Gen.GenParticleSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, Mass_Mu, genColl);
+      Gen.GenLepSelection(*gen_eta, *gen_phi, *gen_pt, *gen_energy, *gen_pdgid, *gen_status, *gen_motherindex, genColl);
 
       std::vector<Lepton> muonGenColl;
       std::vector<Lepton> muonRejColl;

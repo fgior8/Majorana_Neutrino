@@ -11,7 +11,6 @@ using namespace std;
 
 class GenSelection : public Lep {
 
-  Double_t pt_cut_min, pt_cut_max, eta_cut;
   TLorentzVector vPart;
   Bool_t partOK;
   Double_t btag, eta;
@@ -30,7 +29,7 @@ class GenSelection : public Lep {
   void GenJetSelection(Double_t *Gen_px, Double_t *Gen_py, Double_t *Gen_pz, Double_t *Gen_energy, Int_t *Gen_Flavour, vector<Jet>& bquarkColl, vector<Jet>& RecojetColl, vector<Jet>& GenjetColl);
 */
 
-  void GenParticleSelection(std::vector<float> Eta, std::vector<float> Phi, std::vector<float> Pt, std::vector<float> Energy, std::vector<int> PdgId, std::vector<int> Status, std::vector<int> MotherId, double Mass, std::vector<Lepton>& leptonColl);
+  void GenLepSelection(std::vector<float> Eta, std::vector<float> Phi, std::vector<float> Pt, std::vector<float> Energy, std::vector<int> PdgId, std::vector<int> Status, std::vector<int> MotherId, std::vector<Lepton>& leptonColl);
 
 };
 

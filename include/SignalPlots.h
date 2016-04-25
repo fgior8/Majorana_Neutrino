@@ -13,11 +13,12 @@
 class SignalPlots {
   UInt_t i,j,m,n;
   Double_t dijetmass_tmp, dijetmass;
+  Double_t HT, ST;
   const Double_t Mass_W = 80.398;
  
  public:
   TH1F *h_jjmass, *h_llmass, *h_llpt, *h_l1jjmass, *h_l2jjmass, *h_lljjmass, *h_MET, *h_MET_phi;
-  TH1F *h_dilepPt;
+  TH1F *h_dilepPt, *h_HT, *h_ST, *h_METoverHT, *h_METoverST;
   TH1F *h_cosTheta1, *h_cosTheta2;
   TH1F *h_DeltaPhi;
   TH1F *h_PV;
