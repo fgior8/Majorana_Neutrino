@@ -191,7 +191,7 @@ void Analyzer::Loop() {
 
   if (debug) cout<< "loop begins" <<endl;
 
-  fBTagSF = new BTagSFUtil("mujets", "CSVv2", "Medium");
+  fBTagSF = new BTagSFUtil("mujets", "CSVv2", "Tight");
 
   if (debug) cout<< "PU histos loaded" <<endl;
 
@@ -268,14 +268,15 @@ void Analyzer::Loop() {
     Muon.SetBSdz(0.50);
     Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseColl);
 
-    Muon.SetPt(15);
-    Muon.SetEta(2.4);
-    Muon.SetRelIso(0.10,0.6);
-    Muon.SetChiNdof(10,50);
-    Muon.SetBSdxy(0.05,0.20);
-    Muon.SetBSdz(0.50);
-    Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
-    
+    if (IsData) { //check for MC closure test
+      Muon.SetPt(15);
+      Muon.SetEta(2.4);
+      Muon.SetRelIso(0.10,0.6);
+      Muon.SetChiNdof(10,50);
+      Muon.SetBSdxy(0.05,0.20);
+      Muon.SetBSdz(0.50);
+      Muon.MuonSelection(*muon_isPF, *muon_isGlobal, *muon_pt, *muon_eta, *muon_phi, *muon_energy, *muon_relIso04, *muon_q, *muon_validhits, *muon_validpixhits, *muon_matchedstations, *muon_trackerlayers, *muon_normchi, *muon_dxy, *muon_dz, muonLooseNotTightColl);
+    }
     Electron.SetPt(15);
     Electron.SetEta(2.5);
     Electron.SetRelIso(0.15);
@@ -285,7 +286,7 @@ void Analyzer::Loop() {
     
     Jets.SetPt(20);
     Jets.SetEta(2.4);
-    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_partonFlavour, electronColl, muonColl, jetColl);
 /*
     genColl.clear();
 
@@ -320,10 +321,17 @@ void Analyzer::Loop() {
 */
     if(debug) cout<< "DONE object selection" <<endl;
 
+    isBtag=false;
+    HT=ST=0;
+
     if(muonColl.size()>0)
       for (Int_t i=0; i<muonColl.size(); i++) {
 	index=muonColl[i].ilepton();
 	h_muons[0][0]->Fill(weight, (Int_t) muonColl.size(), muonColl[i].lorentzVec(), muonColl[i].charge(), muonColl[i].relIso(), muonColl[i].chiNdof(), muonColl[i].dxy_BS(), muonColl[i].dz_BS());
+      }
+    if(muonLooseColl.size()>0) 
+      for (Int_t i=0; i<muonLooseColl.size(); i++) {
+        ST += muonLooseColl[i].lorentzVec().Pt();
       }
     if (electronColl.size() > 0) {
       for (UInt_t i=0; i<electronColl.size(); i++) {
@@ -331,12 +339,13 @@ void Analyzer::Loop() {
 	h_electrons[0][0]->Fill(weight, (Int_t) electronColl.size(), electronColl[i].lorentzVec(), electronColl[i].charge(), electronColl[i].relIso(), electronColl[i].dxy_BS(), electronColl[i].dz_BS());
       }
     }
-    isBtag=false;
     if(jetColl.size()>0)
       for (int i=0; i<jetColl.size(); i++) {
+        HT += jetColl[i].lorentzVec().Pt();
+        ST += jetColl[i].lorentzVec().Pt();
 	index=jetColl[i].ijet();
-	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jets_CSVInclV2->at(index), jets_vtx3DSig->at(index) );
-        if (fBTagSF->IsTagged(jets_CSVInclV2->at(index), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jetColl[i].btag_disc(), jets_vtx3DSig->at(index) );
+        if (fBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
           isBtag=true;
       }
 
@@ -373,6 +382,7 @@ void Analyzer::Loop() {
       }
     }
 */
+    if ((muonLooseColl[0].lorentzVec()+muonLooseColl[1].lorentzVec()).M()<10) continue;
     if (muonColl.size()>=2)
       h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()).M(),weight);
       
@@ -382,14 +392,14 @@ void Analyzer::Loop() {
     if (muonColl.size()>=2 && jetColl.size()>=2)
       selectionStep.push_back(2);	
     if (electronColl.size()==0 && muonLooseColl.size()==2) {
-      if (muonLooseColl[0].charge()==muonLooseColl[1].charge() && (muonLooseColl[0].lorentzVec()+muonLooseColl[1].lorentzVec()).M()>10) {
+      if (muonLooseColl[0].charge()==muonLooseColl[1].charge()) {
 	selectionStep.push_back(3);
 	if (jetColl.size()==1)
 	  selectionStep.push_back(4);
 	if (jetColl.size()>1) {
 	  selectionStep.push_back(5);
           if (isBtag) selectionStep.push_back(7);
-          else if (MET>50) selectionStep.push_back(6);
+          else if (pow(MET,2)/ST>20) selectionStep.push_back(6);
           else selectionStep.push_back(8);
 	}
       }
@@ -607,7 +617,7 @@ void Analyzer::LoopFR() {
     std::vector<Jet> jetColl;
     Jets.SetPt(40);
     Jets.SetEta(2.4);
-    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_partonFlavour, electronColl, muonColl, jetColl);
 
     if(debug) cout<< "DONE object selection" <<endl;
 
@@ -874,7 +884,7 @@ void Analyzer::LoopQFlip() {
     
     Jets.SetPt(30);
     Jets.SetEta(2.4);
-    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, electronColl, muonColl, jetColl);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_partonFlavour, electronColl, muonColl, jetColl);
 
 
 /*

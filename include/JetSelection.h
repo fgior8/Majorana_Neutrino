@@ -20,9 +20,9 @@ class JJ {
   JJ();
   ~JJ();
  
-  void JetSelection(std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Jet>& jetColl);
+  void JetSelection(std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Int_t> Flavour, std::vector<Jet>& jetColl);
   
-  void JetSelectionLeptonVeto(std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Lepton>& leptonColl1, std::vector<Lepton>& leptonColl2, std::vector<Jet>& jetColl);
+  void JetSelectionLeptonVeto(std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Int_t> Flavour, std::vector<Lepton>& leptonColl1, std::vector<Lepton>& leptonColl2, std::vector<Jet>& jetColl);
 
   void SetPt(Double_t minPt, Double_t maxPt);
   void SetPt(Double_t minPt);
