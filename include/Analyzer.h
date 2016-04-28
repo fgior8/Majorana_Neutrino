@@ -49,7 +49,7 @@ class Analyzer : public Data {
   TFile *outfile;
   Long64_t entrieslimit;
   ReweightPU *reweightPU;
-  BTagSFUtil *fBTagSF;
+  BTagSFUtil *lBTagSF, *hBTagSF;
   
   TDirectory *Dir;
   Int_t cut, channel, index;

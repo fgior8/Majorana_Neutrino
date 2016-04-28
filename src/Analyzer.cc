@@ -191,7 +191,8 @@ void Analyzer::Loop() {
 
   if (debug) cout<< "loop begins" <<endl;
 
-  fBTagSF = new BTagSFUtil("mujets", "CSVv2", "Tight");
+  lBTagSF = new BTagSFUtil("incl", "CSVv2", "Tight");
+  hBTagSF = new BTagSFUtil("mujets", "CSVv2", "Tight");
 
   if (debug) cout<< "PU histos loaded" <<endl;
 
@@ -346,11 +347,15 @@ void Analyzer::Loop() {
 	index=jetColl[i].ijet();
 	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jetColl[i].btag_disc(), jets_vtx3DSig->at(index) );
         if (IsData) {
-          if (fBTagSF->IsTagged(jets_CSVInclV2->at(index), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+          if (lBTagSF->IsTagged(jets_CSVInclV2->at(index), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
             isBtag=true;
         }
-        else { 
-          if (fBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+        else if (jetColl[i].flavour()>1) { 
+          if (hBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+            isBtag=true;
+        }
+        else {
+          if (lBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
             isBtag=true;
         }
       }

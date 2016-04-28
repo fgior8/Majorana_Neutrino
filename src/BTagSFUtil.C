@@ -28,20 +28,20 @@ BTagSFUtil::BTagSFUtil(string MeasurementType, string BTagAlgorithm, TString Ope
   if (OperatingPoint=="Loose")  {
     TaggerOP += "L";
     if (TaggerName=="CSV") TaggerCut = 0.244;
-    if (TaggerName=="CSVv2") TaggerCut = 0.605;
+    if (TaggerName=="CSVv2") TaggerCut = 0.460;
     reader_bc = new BTagCalibrationReader(&calib, BTagEntry::OP_LOOSE, MeasurementType, SystematicFlagBC);
     reader_l  = new BTagCalibrationReader(&calib, BTagEntry::OP_LOOSE, MeasurementType, SystematicFlagL);
   } else if (OperatingPoint=="Medium")  {
     TaggerOP += "M";
     if (TaggerName=="CSV") TaggerCut = 0.679;
-    if (TaggerName=="CSVv2") TaggerCut = 0.890;
+    if (TaggerName=="CSVv2") TaggerCut = 0.800;
     reader_bc = new BTagCalibrationReader(&calib, BTagEntry::OP_MEDIUM, MeasurementType, SystematicFlagBC);
     reader_l  = new BTagCalibrationReader(&calib, BTagEntry::OP_MEDIUM, MeasurementType, SystematicFlagL);
   } else if (OperatingPoint=="Tight")  {
     TaggerOP += "T";
     if (TaggerName=="CSV") TaggerCut = 0.898;
     if (TaggerName=="TCHP") TaggerCut = 3.41;
-    if (TaggerName=="CSVv2") TaggerCut = 0.970;
+    if (TaggerName=="CSVv2") TaggerCut = 0.935;
     reader_bc = new BTagCalibrationReader(&calib, BTagEntry::OP_TIGHT, MeasurementType, SystematicFlagBC);
     reader_l  = new BTagCalibrationReader(&calib, BTagEntry::OP_TIGHT, MeasurementType, SystematicFlagL);
   } 
@@ -99,9 +99,14 @@ float BTagSFUtil::FastSimCorrectionFactor(int JetFlavor, float JetPt, float JetE
 
 float BTagSFUtil::JetTagEfficiency(int JetFlavor, float JetPt, float JetEta) {
 
-  if (abs(JetFlavor)==5) return TagEfficiencyB(JetPt, JetEta);
-  else if (abs(JetFlavor)==4) return TagEfficiencyC(JetPt, JetEta);
-  else return TagEfficiencyLight(JetPt, JetEta);
+  float ThisJetPt = JetPt;
+  if (abs(JetFlavor)==4 || abs(JetFlavor)==5) {
+    if (JetPt>669.99) ThisJetPt = 669.99;
+  } else if (JetPt>999.99) ThisJetPt = 999.99;
+
+  if (abs(JetFlavor)==5) return TagEfficiencyB(ThisJetPt, JetEta);
+  else if (abs(JetFlavor)==4) return TagEfficiencyC(ThisJetPt, JetEta);
+  else return TagEfficiencyLight(ThisJetPt, JetEta);
 
 }
 
@@ -128,7 +133,7 @@ float BTagSFUtil::GetJetSF(int JetFlavor, float JetPt, float JetEta) {
 }
 
 bool BTagSFUtil::IsTagged(float JetDiscriminant, int JetFlavor, float JetPt, float JetEta) {
- 
+
   bool isBTagged = JetDiscriminant>TaggerCut;
 
   if (JetFlavor==-999999) return isBTagged; // Data: no correction needed
