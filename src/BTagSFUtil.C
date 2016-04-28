@@ -119,7 +119,7 @@ float BTagSFUtil::GetJetSF(int JetFlavor, float JetPt, float JetEta) {
   else if (abs(JetFlavor)==4) 
     Btag_SF = reader_bc->eval(BTagEntry::FLAV_C, JetEta, ThisJetPt);
   else Btag_SF = reader_l->eval(BTagEntry::FLAV_UDSG, JetEta, ThisJetPt);
-  
+
   if (IsFastSimDataset)
     Btag_SF *= FastSimCorrectionFactor(JetFlavor, JetPt, JetEta);
   
@@ -128,7 +128,7 @@ float BTagSFUtil::GetJetSF(int JetFlavor, float JetPt, float JetEta) {
 }
 
 bool BTagSFUtil::IsTagged(float JetDiscriminant, int JetFlavor, float JetPt, float JetEta) {
-  
+ 
   bool isBTagged = JetDiscriminant>TaggerCut;
 
   if (JetFlavor==-999999) return isBTagged; // Data: no correction needed
@@ -136,7 +136,7 @@ bool BTagSFUtil::IsTagged(float JetDiscriminant, int JetFlavor, float JetPt, flo
   bool newBTag = isBTagged;
 
   float Btag_SF = GetJetSF(JetFlavor, JetPt, JetEta);
-  
+
   if (Btag_SF == 1) return newBTag; //no correction needed 
 
   //throw die

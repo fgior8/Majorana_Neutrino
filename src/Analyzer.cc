@@ -286,7 +286,7 @@ void Analyzer::Loop() {
     
     Jets.SetPt(20);
     Jets.SetEta(2.4);
-    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_partonFlavour, electronColl, muonColl, jetColl);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_hadronFlavour, electronColl, muonColl, jetColl);
 /*
     genColl.clear();
 
@@ -345,8 +345,14 @@ void Analyzer::Loop() {
         ST += jetColl[i].lorentzVec().Pt();
 	index=jetColl[i].ijet();
 	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jetColl[i].btag_disc(), jets_vtx3DSig->at(index) );
-        if (fBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
-          isBtag=true;
+        if (IsData) {
+          if (fBTagSF->IsTagged(jets_CSVInclV2->at(index), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+            isBtag=true;
+        }
+        else { 
+          if (fBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+            isBtag=true;
+        }
       }
 
     MET = met_pt->at(0);
@@ -617,7 +623,7 @@ void Analyzer::LoopFR() {
     std::vector<Jet> jetColl;
     Jets.SetPt(40);
     Jets.SetEta(2.4);
-    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_partonFlavour, electronColl, muonColl, jetColl);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_hadronFlavour, electronColl, muonColl, jetColl);
 
     if(debug) cout<< "DONE object selection" <<endl;
 
@@ -884,7 +890,7 @@ void Analyzer::LoopQFlip() {
     
     Jets.SetPt(30);
     Jets.SetEta(2.4);
-    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_partonFlavour, electronColl, muonColl, jetColl);
+    Jets.JetSelectionLeptonVeto(*jets_isTight, *jets_pt, *jets_eta, *jets_phi, *jets_energy, *jets_CSVInclV2, *jets_hadronFlavour, electronColl, muonColl, jetColl);
 
 
 /*
