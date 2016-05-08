@@ -1,7 +1,7 @@
 #include "SignalPlots.h"
 
 SignalPlots::SignalPlots(TString name) {
-  h_jjmass =         new TH1F("h_dijetsmass_"    + name,"Invariant mass of the two leading jets",200,0,2000);
+  h_jjmass =         new TH1F("h_dijetsmass_"    + name,"Invariant mass of the two leading jets",300,0,1500);
   h_llmass =         new TH1F("h_llmass_"        + name,"Invariant mass of the two leading muons",100,0,1000);
   h_llpt   =         new TH1F("h_llpt_"          + name,"p_{T} of the reconstructed Z",100,0,1000);
   h_l1jjmass =       new TH1F("h_l1jjmass_"      + name,"Invariant mass of the leading muon plus jets",200,0,2000);
@@ -58,6 +58,7 @@ void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, st
     HT+=jets[jet].lorentzVec().Pt();
     ST+=jets[jet].lorentzVec().Pt();
   }
+
   h_HT->Fill(HT,weight);
   h_ST->Fill(ST,weight);
   h_METoverHT->Fill(pow(MET,2)/HT,weight);
@@ -67,6 +68,16 @@ void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, st
   h_MT2ll->Fill(getMT2(leptons[i].lorentzVec(), leptons[j].lorentzVec(), MET, MET_phi), weight);
 
   if (cut>1 && cut!=3 && cut!=4) {
+    for(UInt_t emme=0; emme<jets.size()-1; emme++)
+      for(UInt_t enne=1; enne<jets.size(); enne++) {
+        dijetmass_tmp = (jets[emme].lorentzVec()+jets[enne].lorentzVec()).M();
+        //dijetmass_tmp = (muons[i].lorentzVec()+muons[j].lorentzVec()+jets[emme].lorentzVec()+jets[enne].lorentzVec()).M();
+        if ( fabs(dijetmass_tmp-Mass_W) < fabs(dijetmass-Mass_W) ) {
+          dijetmass = dijetmass_tmp;
+          m = emme;
+          n = enne;
+        }
+      }
     h_MT2bb->Fill( getMT2bb(jets, leptons, MET, MET_phi), weight);
     h_MT2lblb->Fill( getMT2lblb(jets, leptons, MET, MET_phi), weight);  
 

@@ -1,0 +1,4 @@
+/eos/uscms/store/user/fgior8/v7-6-3/WpWpJJ_QCD_TuneCUETP8M1_13TeV-madgraph-pythia8/Skim_3.root
+/eos/uscms/store/user/fgior8/v7-6-3/WpWpJJ_QCD_TuneCUETP8M1_13TeV-madgraph-pythia8/Skim_1.root
+/eos/uscms/store/user/fgior8/v7-6-3/WpWpJJ_QCD_TuneCUETP8M1_13TeV-madgraph-pythia8/Skim_2.root
+/eos/uscms/store/user/fgior8/v7-6-3/WpWpJJ_QCD_TuneCUETP8M1_13TeV-madgraph-pythia8/Skim_4.root

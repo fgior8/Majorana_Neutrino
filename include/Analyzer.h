@@ -44,12 +44,12 @@ class Analyzer : public Data {
   //SF
 
   Bool_t isData, MCatNLO;
-  Bool_t isBtag;
+  Bool_t isBtag, isBtagVeto;
   TString completename, treename;
   TFile *outfile;
   Long64_t entrieslimit;
   ReweightPU *reweightPU;
-  BTagSFUtil *lBTagSF, *hBTagSF;
+  BTagSFUtil *lBTagSF, *hBTagSF, *slBTagSF, *shBTagSF;
   
   TDirectory *Dir;
   Int_t cut, channel, index;

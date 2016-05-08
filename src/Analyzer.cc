@@ -128,7 +128,7 @@ void Analyzer::Loop() {
   Double_t SingleFake=0; Double_t DoubleFake=0; Double_t Single_Double=0;
   Int_t nSingleFake=0; Int_t nDoubleFake=0;
 
-  if (debug) cout<< "Something wrong reading the FR histo" <<endl;
+  if (debug) cout<< "Read the FR histo" <<endl;
 
   singleFake=new Double_t**[nSplit];
   doubleFake=new Double_t****[nSplit];
@@ -193,6 +193,8 @@ void Analyzer::Loop() {
 
   lBTagSF = new BTagSFUtil("incl", "CSVv2", "Tight");
   hBTagSF = new BTagSFUtil("mujets", "CSVv2", "Tight");
+  slBTagSF = new BTagSFUtil("incl", "CSVv2", "Medium");
+  shBTagSF = new BTagSFUtil("mujets", "CSVv2", "Medium");
 
   if (debug) cout<< "PU histos loaded" <<endl;
 
@@ -322,7 +324,7 @@ void Analyzer::Loop() {
 */
     if(debug) cout<< "DONE object selection" <<endl;
 
-    isBtag=false;
+    isBtag=isBtagVeto=false;
     HT=ST=0;
 
     if(muonColl.size()>0)
@@ -347,16 +349,22 @@ void Analyzer::Loop() {
 	index=jetColl[i].ijet();
 	h_jets[0][0]->Fill(weight, (Int_t) jetColl.size(), jetColl[i].lorentzVec(), jetColl[i].btag_disc(), jets_vtx3DSig->at(index) );
         if (IsData) {
-          if (lBTagSF->IsTagged(jets_CSVInclV2->at(index), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+          if (lBTagSF->IsTagged(jetColl[i].btag_disc(), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
             isBtag=true;
+          if (slBTagSF->IsTagged(jetColl[i].btag_disc(), -999999, jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+            isBtagVeto=true;
         }
         else if (jetColl[i].flavour()>1) { 
           if (hBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
             isBtag=true;
+          if (shBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+            isBtagVeto=true;
         }
         else {
           if (lBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
             isBtag=true;
+          if (slBTagSF->IsTagged(jetColl[i].btag_disc(), jetColl[i].flavour(), jetColl[i].lorentzVec().Pt(), jetColl[i].lorentzVec().Eta()))
+            isBtagVeto=true;
         }
       }
 
@@ -397,7 +405,26 @@ void Analyzer::Loop() {
     if (muonColl.size()>=2)
       h_prova->Fill((muonColl[0].lorentzVec()+muonColl[1].lorentzVec()).M(),weight);
       
-    
+    Double_t Wpair=999.9;
+    Double_t temp_Wpair=999.9;
+    Double_t lljj=999.9;
+    Double_t temp_lljj=999.9;
+    if (jetColl.size() >= 2 && muonLooseColl.size()==2) {
+      for (UInt_t i=0; i<jetColl.size()-1; i++)
+        for (UInt_t j=1; j<jetColl.size(); j++) {
+          temp_Wpair = (jetColl[i].lorentzVec() + jetColl[j].lorentzVec()).M();
+          temp_lljj = (muonLooseColl[0].lorentzVec() + muonLooseColl[1].lorentzVec() + jetColl[i].lorentzVec() + jetColl[j].lorentzVec()).M();
+          if ( fabs(temp_lljj-Mass_W) < fabs(lljj-Mass_W) ) {
+          //if ( fabs(temp_Wpair-Mass_W) < fabs(Wpair-Mass_W) ) {
+            lljj = temp_lljj;
+            Wpair = temp_Wpair;
+          }
+        }
+    }
+    //if (Wpair<50 || Wpair>110) continue;
+    //if (Wpair>120 || lljj>200) continue;
+    //if (Wpair>180) continue;
+    if (debug) cout << "Selection step" << endl; 
     if (muonColl.size()>=2)
       selectionStep.push_back(1);
     if (muonColl.size()>=2 && jetColl.size()>=2)
@@ -411,10 +438,12 @@ void Analyzer::Loop() {
 	  selectionStep.push_back(5);
           if (isBtag) selectionStep.push_back(7);
           else if (pow(MET,2)/ST>20) selectionStep.push_back(6);
-          else selectionStep.push_back(8);
+          else if (!isBtagVeto && pow(MET,2)/ST<=10) selectionStep.push_back(8);
+          else continue;
 	}
       }
     }
+    if (debug) cout << "now filling plots" << endl;
     for (UInt_t m=0;m<selectionStep.size();m++) {
       cut = selectionStep[m];
       channel = 0;
@@ -463,7 +492,7 @@ void Analyzer::Loop() {
       }
     }
     ///Filling standard particle plots END
-
+    if (debug) cout << "loop end" << endl;
   }
   if(debug) cout<< "out of the loop" <<endl;
   cout << "writing histos" << endl;
