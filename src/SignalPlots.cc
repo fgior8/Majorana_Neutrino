@@ -69,7 +69,7 @@ void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, st
 
   if (cut>1 && cut!=3 && cut!=4) {
     for(UInt_t emme=0; emme<jets.size()-1; emme++)
-      for(UInt_t enne=1; enne<jets.size(); enne++) {
+      for(UInt_t enne=emme+1; enne<jets.size(); enne++) {
         dijetmass_tmp = (jets[emme].lorentzVec()+jets[enne].lorentzVec()).M();
         //dijetmass_tmp = (muons[i].lorentzVec()+muons[j].lorentzVec()+jets[emme].lorentzVec()+jets[enne].lorentzVec()).M();
         if ( fabs(dijetmass_tmp-Mass_W) < fabs(dijetmass-Mass_W) ) {

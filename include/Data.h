@@ -60,6 +60,7 @@ public :
    vector<int>     *gen_status;
    vector<int>     *gen_pdgid;
    vector<int>     *gen_motherindex;
+   vector<int>     *gen_isprompt;
    vector<float>   *genjet_pt;
    vector<float>   *genjet_eta;
    vector<float>   *genjet_phi;
@@ -286,6 +287,7 @@ public :
    TBranch        *b_gen_status;   //!
    TBranch        *b_gen_pdgid;   //!
    TBranch        *b_gen_motherindex;   //!
+   TBranch        *b_gen_isprompt;   //!
    TBranch        *b_genjet_pt;   //!
    TBranch        *b_genjet_eta;   //!
    TBranch        *b_genjet_phi;   //!
@@ -556,6 +558,7 @@ void Data::Init(TTree *tree)
    gen_status = 0;
    gen_pdgid = 0;
    gen_motherindex = 0;
+   gen_isprompt = 0;
    genjet_pt = 0;
    genjet_eta = 0;
    genjet_phi = 0;
@@ -768,6 +771,7 @@ void Data::Init(TTree *tree)
    fChain->SetBranchAddress("gen_status", &gen_status, &b_gen_status);
    fChain->SetBranchAddress("gen_pdgid", &gen_pdgid, &b_gen_pdgid);
    fChain->SetBranchAddress("gen_motherindex", &gen_motherindex, &b_gen_motherindex);
+   fChain->SetBranchAddress("gen_isprompt", &gen_isprompt, &b_gen_isprompt);
    fChain->SetBranchAddress("genjet_pt", &genjet_pt, &b_genjet_pt);
    fChain->SetBranchAddress("genjet_eta", &genjet_eta, &b_genjet_eta);
    fChain->SetBranchAddress("genjet_phi", &genjet_phi, &b_genjet_phi);

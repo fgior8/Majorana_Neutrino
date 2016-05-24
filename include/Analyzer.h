@@ -80,7 +80,7 @@ class Analyzer : public Data {
   std::vector<Lepton> muonLooseNotTightColl;
   std::vector<Lepton> muonLooseColl;
   std::vector<Lepton> muonColl;
-  std::vector<Jet> jetColl;
+  std::vector<Jet> jetColl; std::vector<Jet> jetCollTop;
   std::vector<Lepton> muonSelected;
   std::vector<Lepton> electronColl;
   std::vector<Lepton> genColl;

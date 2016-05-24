@@ -411,7 +411,7 @@ void Analyzer::Loop() {
     Double_t temp_lljj=999.9;
     if (jetColl.size() >= 2 && muonLooseColl.size()==2) {
       for (UInt_t i=0; i<jetColl.size()-1; i++)
-        for (UInt_t j=1; j<jetColl.size(); j++) {
+        for (UInt_t j=i+1; j<jetColl.size(); j++) {
           temp_Wpair = (jetColl[i].lorentzVec() + jetColl[j].lorentzVec()).M();
           temp_lljj = (muonLooseColl[0].lorentzVec() + muonLooseColl[1].lorentzVec() + jetColl[i].lorentzVec() + jetColl[j].lorentzVec()).M();
           if ( fabs(temp_lljj-Mass_W) < fabs(lljj-Mass_W) ) {
@@ -971,6 +971,7 @@ void Analyzer::LoopQFlip() {
             dRtmp = muonColl[i].lorentzVec().DeltaR(genColl[j].lorentzVec());
             int index = genColl[j].ilepton();
             int mother = gen_motherindex->at(index);
+            if(!gen_isprompt->at(index)) continue;
             if(mother < 0) prompt = true;
             else if (dRtmp < 0.1) {
               while(mother > 0 && fabs(gen_pdgid->at(index))==13) {
@@ -983,7 +984,7 @@ void Analyzer::LoopQFlip() {
               }
             }
             // Find match with smallest DeltaR (always < 0.3)
-            if(dRtmp < 0.1 && dRtmp < deltaR && prompt && !fromTau) {
+            if(dRtmp < 0.1 && dRtmp < deltaR) {
               match = true;
               deltaR = dRtmp;
               gen = j; // Index of best match
