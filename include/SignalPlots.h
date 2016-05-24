@@ -23,6 +23,7 @@ class SignalPlots {
   TH1F *h_DeltaPhi;
   TH1F *h_PV;
   TH1F *h_MT2ll, *h_MT2bb, *h_MT2lblb;
+  TH2F *h2_h_l1jjmass_h_l2jjmass;
   
   SignalPlots(TString name);
   ~SignalPlots();

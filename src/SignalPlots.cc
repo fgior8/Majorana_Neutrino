@@ -21,6 +21,7 @@ SignalPlots::SignalPlots(TString name) {
   h_cosTheta2 =      new TH1F("h_cosTheta2_"     + name,"cos#theta second muon",100,-1,1);
   h_DeltaPhi =       new TH1F("h_DeltaPhi_"      + name,"#Delta#phi between two muons",100,0.0,3.15);
   h_PV =             new TH1F("h_PV_"            + name,"number of primary vertices",60,0,60);
+  h2_h_l1jjmass_h_l2jjmass = new TH2F("h2_h_l1jjmass_h_l2jjmass_"+name,"m(l1jj) vs m(l2jj)",200,0,2000,200,0,2000);
 }
 
 SignalPlots::~SignalPlots() {
@@ -44,6 +45,7 @@ SignalPlots::~SignalPlots() {
   delete h_cosTheta2;
   delete h_DeltaPhi;
   delete h_PV;
+  delete h2_h_l1jjmass_h_l2jjmass;
 }
 
 void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, std::vector<Lepton>& leptons, std::vector<Jet>& jets, Double_t weight, Int_t channel, Int_t cut) {
@@ -85,6 +87,7 @@ void SignalPlots::Fill(UInt_t numberVertices, Double_t MET, Double_t MET_phi, st
     h_lljjmass->Fill( (leptons[i].lorentzVec()+leptons[j].lorentzVec()+jets[m].lorentzVec()+jets[n].lorentzVec()).M(),weight);
     h_l1jjmass->Fill( (leptons[i].lorentzVec()+jets[m].lorentzVec()+jets[n].lorentzVec()).M(),weight);
     h_l2jjmass->Fill( (leptons[j].lorentzVec()+jets[m].lorentzVec()+jets[n].lorentzVec()).M(),weight);
+    h2_h_l1jjmass_h_l2jjmass->Fill( (leptons[i].lorentzVec()+jets[m].lorentzVec()+jets[n].lorentzVec()).M(),(leptons[j].lorentzVec()+jets[m].lorentzVec()+jets[n].lorentzVec()).M(),weight);
   }
   
   h_cosTheta1->Fill(cos(leptons[i].lorentzVec().Theta()),weight);
@@ -115,5 +118,6 @@ void SignalPlots::Write() {
   h_cosTheta2->Write();
   h_DeltaPhi->Write();
   h_PV->Write();
+  h2_h_l1jjmass_h_l2jjmass->Write();
 }
 
