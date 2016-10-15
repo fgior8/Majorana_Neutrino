@@ -29,7 +29,7 @@ void MuonSel::MuonSelection(std::vector<Bool_t> IsPF, std::vector<Bool_t> IsGlob
     int charge = Charge[ilep];
     if (etaPt && RelIsod0Chi2 && individual) 
       leptonColl.push_back( Lepton(leptonType, ilep, vLepton, Eta[ilep], LeptonchiNdof, dxy, dz, charge, fakeType, looseTight, LeptonRelIso) );
-   
+;   
   }
   
   std::sort( leptonColl.begin(), leptonColl.end(), LeptonPTSorter );

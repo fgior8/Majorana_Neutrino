@@ -13,12 +13,12 @@ class ReweightPU {
  public:
   ReweightPU(TString filenameData);
   ~ReweightPU();
-  double GetWeight(double nvtx);
+  Double_t GetWeight(Int_t nvtx);
   
  private:
   
   TFile* fileData_;
-  
+  TFile* fileMC_; 
   TH1D* h_MCmod_;
   TH1D* h_Data_;
       

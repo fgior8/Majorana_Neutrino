@@ -4,21 +4,19 @@ float getXS(TString MCsample) {
   float eventXS=-1.;
   
   if (MCsample == "TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8") 
-    //eventXS=815.96/11339232.;
-    eventXS=831.8/10215131.0;
+    eventXS=831.76/10259872.;
+  if (MCsample == "TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8")
+    eventXS=831.76/(38261382.*0.3319368255);
   if (MCsample == "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1") 
     eventXS=35.6/1000000.;
   if (MCsample == "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1") 
     eventXS=35.6/995600.;
   if (MCsample == "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
-    //eventXS=1./3210.8;
-    eventXS=6024.2/81236728.0;
+    eventXS=6025.2/(28696958.*0.669887);
   if (MCsample == "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
-    //eventXS=1./1219.8;
-    eventXS=18610.0/22606898.0;
+    eventXS=18610.0/(30915886.*0.727607);
   if (MCsample == "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") 
-    //eventXS=1./268.863;
-    eventXS=61526.7/16521035.0;
+    eventXS=61526.7/(47502020.*0.684022);
   if (MCsample == "TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8") 
     eventXS=0.2043/129001.0;
   if (MCsample == "TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8") 
@@ -27,7 +25,11 @@ float getXS(TString MCsample) {
     eventXS=0.2529/184990.0;
   if (MCsample == "TTZToQQ_TuneCUETP8M1_13TeV-amcatnlo-pythia8") 
     eventXS=0.5297/351398.0;
-  
+  if  (MCsample == "ttWJets_13TeV_madgraphMLM")
+    eventXS=0.6105/12791626.0;
+  if  (MCsample == "ttZJets_13TeV_madgraphMLM")
+    eventXS=0.7826/21948980.0; 
+
   if (MCsample == "WW_TuneCUETP8M1_13TeV-pythia8") 
     //eventXS=110.8/994416.;
     eventXS=113.8/988418.0;
@@ -39,6 +41,10 @@ float getXS(TString MCsample) {
     eventXS=16.9/985600.0;
   if (MCsample == "WpWpJJ_EWK_TuneCUETP8M1_13TeV-madgraph-pythia8")
     eventXS=0.02064/145800.0; 
+  if (MCsample == "WpWpJJ_QCD_TuneCUETP8M1_13TeV-madgraph-pythia8")
+    eventXS=0.01538/120000.0;
+  if (MCsample == "WW_DoubleScattering_13TeV-pythia8")
+    eventXS=1.640/844954.0;
  
   if (MCsample == "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8") 
     eventXS=2960198.4/31680404.0;

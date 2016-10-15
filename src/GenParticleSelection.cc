@@ -3,65 +3,56 @@
 GenSelection::GenSelection() { }
 GenSelection::~GenSelection() { }
 
-void GenSelection::GenPartSelection(Int_t nGen, Int_t *Gen_pdgId, Int_t *Gen_status, Int_t *Gen_motherId, Int_t *Gen_grammaId, Int_t *Gen_sourceId, Double_t *Gen_charge, Double_t *Gen_pt, Double_t *Gen_eta, Double_t *Gen_phi, Double_t *Gen_mass, std::vector<Lepton>& electronColl, std::vector<Lepton>& electronNuColl, std::vector<Lepton>& muonColl, std::vector<Lepton>& muonNuColl, std::vector<Jet>& bquarkColl, std::vector<TLorentzVector>& lightquarkColl) {
 
+void GenSelection::GenLepSelection(std::vector<float> Eta, std::vector<float> Phi, std::vector<float> Pt, std::vector<float> Energy, std::vector<int> PdgId, std::vector<int> Status, std::vector<int> MotherId, std::vector<bool> Ishardprocess, std::vector<bool> Fromhardprocess, std::vector<Lepton>& leptonColl) {
   fakeType = Lepton::unknown;
   looseTight = Lepton::Other;
-  btag = 9999.;
-	
-  for (UInt_t ipart = 0; ipart < nGen; ++ipart) {
-    //  if ((nthdigit( abs(Gen_pdgId[ipart]), 0)==5 || nthdigit( abs(Gen_pdgId[ipart]), 1)==5 || nthdigit( abs(Gen_pdgId[ipart]), 2)==5) )
-    //cout << "Gen_pdgId[ipart] " << Gen_pdgId[ipart] << " Gen_mass[ipart] " << Gen_mass[ipart] << " Gen_motherId[ipart] " << Gen_motherId[ipart] <<endl;
-    pt_cut_min = 10.;
-    pt_cut_max = 1000000000.;
-    eta_cut = 3.0;
-    charge = Gen_charge[ipart];
-    eta = Gen_grammaId[ipart];
-    if (Gen_pt[ipart] >= pt_cut_min && Gen_pt[ipart] < pt_cut_max
-        && fabs(Gen_eta[ipart]) < eta_cut) { 
-      vPart.SetPtEtaPhiM(Gen_pt[ipart], Gen_eta[ipart], Gen_phi[ipart], Gen_mass[ipart]);
-      if (fabs(Gen_pdgId[ipart])==11 && Gen_status[ipart]==1) {
-	leptonType = Lepton::Electron;
-	//	electronColl.push_back(vPart);
-	electronColl.push_back( Lepton(leptonType, ipart, vPart, eta, btag, btag, btag, charge, fakeType, looseTight, btag) );
-      }
-      if (fabs(Gen_pdgId[ipart])==12 && Gen_status[ipart]==1) {
-	leptonType = Lepton::Electron;
-	electronNuColl.push_back( Lepton(leptonType, ipart, vPart, eta, btag, btag, btag, charge, fakeType, looseTight, btag) );
-      }    
-      if (fabs(Gen_pdgId[ipart])==13 && Gen_status[ipart]==1) {
-	leptonType = Lepton::Muon;
-	muonColl.push_back( Lepton(leptonType, ipart, vPart, eta, btag, btag, btag, charge, fakeType, looseTight, btag) );
-      }
-      if (fabs(Gen_pdgId[ipart])==14 && Gen_status[ipart]==1) {
-	leptonType = Lepton::Muon;
-	muonNuColl.push_back( Lepton(leptonType, ipart, vPart, eta, btag, btag, btag, charge, fakeType, looseTight, btag) );
-      }
-      if (fabs(Gen_pdgId[ipart])==5 && fabs(Gen_motherId[ipart])==6 && abs(Gen_sourceId[ipart])==6)
-	bquarkColl.push_back( Jet(vPart, eta, btag, ipart));
-      if (fabs(Gen_pdgId[ipart])>0 && fabs(Gen_pdgId[ipart])<5)
-	lightquarkColl.push_back(vPart);
+  dummy = 9999.;
+  leptonColl_tmp.clear();
+  for (UInt_t ipart=0; ipart<Pt.size(); ipart++) {
+    //simple checks to avoid crashes   
+    if(MotherId[ipart] <= 0) continue;
+    if(MotherId[ipart] >= Pt.size()) continue;
+    if(Pt[ipart] < 0.1) continue;
+    //we want status 1 leptons
+    if(Status[ipart]!=1) continue;
+    //only muons and electrons
+    if(fabs(PdgId[ipart])==13) leptonType = Lepton::Muon;
+    //else if (fabs(PdgId[ipart])==11) leptonType = Lepton::Electron;
+    else continue;
+    ///looking at ancestor only muon 
+    mindex = ipart;
+    while ( fabs(PdgId[mindex]) == 13) {
+      if(MotherId[mindex] >= Pt.size()) break;
+      mindex = MotherId[mindex];
+    }
+    //if () nDauther++;
+    if (Status[mindex]==2 && fabs(PdgId[mindex])>50) continue;
+    if (!(Status[mindex]==2 && fabs(PdgId[mindex])==15) && (Fromhardprocess[ipart]==0 && Fromhardprocess[mindex]==0)) continue;
+    charge = PdgId[ipart]/abs(PdgId[ipart]);
+    eta = Eta[ipart];
+    double ID = PdgId[ipart];
+    if (Pt[ipart] >= pt_cut_min && Pt[ipart] < pt_cut_max && fabs(Eta[ipart]) < eta_cut) { 
+      vPart.SetPtEtaPhiE(Pt[ipart], Eta[ipart], Phi[ipart], Energy[ipart]);
+      leptonColl_tmp.push_back( Lepton(leptonType, ipart, vPart, eta, mindex, dummy, dummy, charge, fakeType, looseTight, ID ) );
     }
   }
-  
+  if (leptonColl_tmp.size()>1) {
+    for (UInt_t i=0; i<leptonColl_tmp.size()-1; i++) {
+      notinclude = false;
+      for (UInt_t j=i+1; j<leptonColl_tmp.size(); j++) {
+        if (leptonColl_tmp[i].chiNdof()==leptonColl_tmp[j].chiNdof()) {
+          if (Fromhardprocess[leptonColl_tmp[i].ilepton()] == 0 )
+            notinclude = false; 
+        }
+      }
+      if (!notinclude) leptonColl.push_back(leptonColl_tmp[i]);
+    }
+  }
+  else if (leptonColl_tmp.size()==1)
+    leptonColl.push_back(leptonColl_tmp[0]);
+  else
+    cout << " no gen " << endl;
   // std::sort( jetColl.begin(), jetColl.end(), JetPTSorter );
 }
 
-
-void GenSelection::GenJetSelection(Double_t *Gen_px, Double_t *Gen_py, Double_t *Gen_pz, Double_t *Gen_energy, Int_t *Gen_Flavour, vector<Jet>& bquarkColl, vector<Jet>& RecojetColl, vector<Jet>& GenjetColl) {
-
-  for (UInt_t i = 0; i < RecojetColl.size(); i++) {
-    partOK = false;
-    UInt_t idx = RecojetColl[i].ijet();
-    if (Gen_energy[idx]<=0.) continue;
-    vPart.SetPxPyPzE(Gen_px[idx], Gen_py[idx], Gen_pz[idx], Gen_energy[idx]);
-    eta = vPart.Eta();
-    btag = Gen_Flavour[idx];
-    for (UInt_t j=0; j<bquarkColl.size(); j++)
-      if (vPart.DeltaR( bquarkColl[j].lorentzVec() ) < 0.1 )
-	partOK = true;
-    if (fabs(eta)<6.0 && partOK)
-      GenjetColl.push_back( Jet(vPart, eta, btag, idx) );
-  }
-    
-}

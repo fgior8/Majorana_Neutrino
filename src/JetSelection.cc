@@ -3,24 +3,24 @@
 JJ::JJ() { }
 JJ::~JJ() { }
 
-void JJ::JetSelection (std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Jet>& jetColl) {
+void JJ::JetSelection (std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Int_t> Flavour, std::vector<Jet>& jetColl) {
 
   for (UInt_t ijet = 0; ijet < Pt.size(); ++ijet) {
     if (Pt[ijet] >= pt_cut_min && Pt[ijet] < pt_cut_max	&& fabs(Eta[ijet]) < eta_cut && pfJet[ijet]>0) {
       vJet.SetPtEtaPhiE(Pt[ijet], Eta[ijet], Phi[ijet], E[ijet]);;
-      jetColl.push_back( Jet(vJet, Eta[ijet], BTag[ijet], ijet) );
+      jetColl.push_back( Jet(vJet, Flavour[ijet], BTag[ijet], ijet) );
     }
   }
   std::sort( jetColl.begin(), jetColl.end(), JetPTSorter );
 }
 
-void JJ::JetSelectionLeptonVeto(std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Lepton>& leptonColl1, std::vector<Lepton>& leptonColl2, std::vector<Jet>& jetColl) {
+void JJ::JetSelectionLeptonVeto(std::vector<Bool_t> pfJet, std::vector<Double_t> Pt, std::vector<Double_t> Eta, std::vector<Double_t> Phi, std::vector<Double_t> E, std::vector<Double_t> BTag, std::vector<Int_t> Flavour, std::vector<Lepton>& leptonColl1, std::vector<Lepton>& leptonColl2, std::vector<Jet>& jetColl) {
   std::vector<Jet> pre_jetColl;
 
   for (UInt_t ijet = 0; ijet < Pt.size(); ijet++) {
     if (Pt[ijet] >= pt_cut_min && Pt[ijet] < pt_cut_max	&& fabs(Eta[ijet]) < eta_cut && pfJet[ijet]>0) {
       vJet.SetPtEtaPhiE(Pt[ijet], Eta[ijet], Phi[ijet], E[ijet]);;
-      pre_jetColl.push_back( Jet(vJet, Eta[ijet], BTag[ijet], ijet) );
+      pre_jetColl.push_back( Jet(vJet, Flavour[ijet], BTag[ijet], ijet) );
     }
   }
 

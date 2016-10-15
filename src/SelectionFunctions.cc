@@ -43,16 +43,16 @@ Bool_t isGoodEvent(Int_t nVertex, std::vector<Bool_t> Vertex_Fake, std::vector<F
 Bool_t Zselection(std::vector<Lepton>& leptonColl, Float_t MET) {
   Float_t mass=0;
   Float_t temp_mass=0;
-  if (leptonColl.size()==2) {
-    for (UInt_t i=0; i<leptonColl.size()-1; i++)
-      for(UInt_t j=i+1; j<leptonColl.size(); j++) {
+  if (leptonColl.size()>=2) {
+    for (UInt_t i=0; i<1; i++)//leptonColl.size()-1; i++)
+      for(UInt_t j=i+1; j<2 ; j++) { //leptonColl.size(); j++) {
         if ( leptonColl[i].charge() != leptonColl[j].charge() ) {
           temp_mass = (leptonColl[i].lorentzVec() + leptonColl[j].lorentzVec()).M();
           if ( fabs(temp_mass-Mass_Z) < fabs(mass-Mass_Z) )
             mass=temp_mass;
         }
       }
-    if ( MET < 20 && mass > (Mass_Z-20) && mass < (Mass_Z+20) )
+    if ( fabs(mass-Mass_Z) < 20 )
       return true;
     else
       return false;

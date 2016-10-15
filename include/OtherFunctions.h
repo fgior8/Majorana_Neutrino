@@ -42,5 +42,4 @@ static const double arrayeta[] = {0.0,0.8,1.479,2.0,2.5};
 static const double arraypT [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
 static const Int_t nintpT=7;
 static const Int_t ninteta=4;
-
 #endif

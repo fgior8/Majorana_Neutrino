@@ -19,6 +19,7 @@
 #include "MuonSelection.h"
 #include "ElectronSelection.h"
 #include "JetSelection.h"
+#include "GenParticleSelection.h"
 
 #include <iostream>
 #include <cmath>
@@ -28,36 +29,40 @@ using namespace std;
 class Analyzer : public Data {
 
   const Bool_t debug = false; 
-  //const Double_t integratedlumi = 199.149; // for Fakes
-  const Double_t integratedlumi = 2318.267; // Signal
+  //const Double_t integratedlumi = 1.874760e+02; // for Fakes
+  const Double_t integratedlumi = 15926.873; // Signal
+  const Bool_t GenMatch = true;
   const Double_t Mass_Z = 91.1876;
   const Double_t Mass_W = 80.398;
-
+  //pileup Weight
+  ReweightPU *reweightPU;
   //SF parametrization
   TFile *MuSF_trig, *ElSF_trig, *MuElSF_trig;
   TFile *MuSF_ID, *MuSF_ISO, *ElSF_IDISO;
-  TH2F *hmuIDSF, *hmuISOSF, *hmumuTriggerSF;
-  TH2F *heIDSF, *heeTriggerSF;
+  TH2F *hmuIDSF, *hmuISOSF, *hmumuTriggerSF8, *hmumuTriggerSF17;
+  TH2F *heIDSF, *heeTriggerSF12, *heeTriggerSF23;
   TH2F *hmueTriggerSF;
   //SF
 
   Bool_t isData, MCatNLO;
+  Bool_t isBtag, isBtagVeto;
   TString completename, treename;
   TFile *outfile;
   Long64_t entrieslimit;
-  ReweightPU *reweightPU;
-  BTagSFUtil *fBTagSF;
+  BTagSFUtil *lBTagSF, *hBTagSF, *slBTagSF, *shBTagSF;
   
   TDirectory *Dir;
   Int_t cut, channel, index;
   Bool_t *goodVerticies;
-  Double_t HT, MET, MET_phi;
+  Double_t HT, ST, MET, MET_phi;
+  Double_t temp_pt;
   UInt_t numberVertices, VertexN;
   Bool_t Zveto, triggerOK;
   TString trigger;
   Double_t MCweight, weight;
   
   MuonSel Muon;
+  GenSelection Gen;
   ElectronSel Electron;
   JJ Jets;
 
@@ -75,9 +80,11 @@ class Analyzer : public Data {
   std::vector<Lepton> muonLooseNotTightColl;
   std::vector<Lepton> muonLooseColl;
   std::vector<Lepton> muonColl;
-  std::vector<Jet> jetColl;
+  std::vector<Jet> jetColl; std::vector<Jet> jetCollTop;
   std::vector<Lepton> muonSelected;
   std::vector<Lepton> electronColl;
+  std::vector<Lepton> genColl;
+  std::vector<Lepton> muonCollMatch;
 
   static const Int_t nintpT=9;
   Double_t *arraypT;
@@ -90,37 +97,9 @@ class Analyzer : public Data {
     
   TH1F *h_prova;
   TH1F *h_VertexNoReweight, *h_VertexPostReweight;
-
-  ///Tree for optimization//////
-  TFile *outfileTree;
-  // Trees
-  TTree *AnalysisTree;
-  // Branches
-  int TNPV;
-  int TNJets;     
-  int TNJetsBtag;
-  int TNMuon;
-  int TNElec;
-  float TWeight;
-  float TMET;
-  float TMET_Phi;
-  float THT;
-  float TMT2ll;
-  float TMT2bb;
-  float TMT2lblb;
-  TLorentzVector TMuon_Lorentz[20];
-  TLorentzVector TElec_Lorentz[20];
-  TLorentzVector TJet_Lorentz[50];
-  Float_t TJet_discriminant[50];
-  TLorentzVector TBJet_Lorentz[30];
-  Float_t TMuon_Charge[20];
-  Float_t TElec_Charge[20];
-
-  //done optimization tree variables
+  TH1F *h_nTrueNoReweight, *h_nTruePostReweight;
 
  public:
-  static const Bool_t MC_pu = false; 
-
 
   Analyzer();
   ~Analyzer();
