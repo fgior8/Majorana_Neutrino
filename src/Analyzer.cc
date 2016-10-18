@@ -15,8 +15,8 @@ Analyzer::Analyzer() {
   if(!MuElSF_trig)
     cout << "ERROR [MuonSF_trig]: Could not open file " << MuSF_trig << " or " << ElSF_trig << " or " << MuElSF_trig << "!"  << endl;
   // --second for the ID and Isolation-- //
-  MuSF_ID    = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonID_Z_RunCD_Reco76X_Feb15.root");
-  MuSF_ISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonIso_Z_RunCD_Reco76X_Feb15.root");
+  MuSF_ID    = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonID_Z_RunBCD_prompt80X_7p65.root");
+  MuSF_ISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/MuonIso_Z_RunBCD_prompt80X_7p65.root");
 
   ElSF_IDISO   = TFile::Open("/uscms/home/fgior8/commons/ScaleFactors/elec_tight_sf2D_13TeV_RunD.root");
   if(!MuSF_ID || !MuSF_ISO || !ElSF_IDISO)
